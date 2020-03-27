@@ -1,0 +1,18 @@
+.ranklist-title {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 22px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.ranklist-container {
+    max-height: calc(105vh - 210px);
+    overflow-y: scroll;
+    text-align: center;
+    padding: 10px;
+}
+
+.ranklist-container table {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 5px;
+}

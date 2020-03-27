@@ -1,0 +1,74 @@
+.section-container {
+    margin-bottom: 30%;
+}
+
+.search-section {
+    background-image: url(../../imgs/search_background.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    padding-top: 5px;
+    padding-bottom: 9%;
+    border-bottom-left-radius: 50% 20%;
+    border-bottom-right-radius: 50% 20%;
+}
+
+.search-box {
+    width: 55%;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    position: relative;
+    padding: 0;
+}
+
+.search-result {
+    position: absolute;
+    width: 100%;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    z-index: 100;
+}
+
+.search-section img {
+    width: 16%;
+}
+
+.search-box li {
+    cursor: pointer;
+}
+
+.search-box li:first-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.search-box input {
+    height: 50px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.timer-text {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 18px;
+    font-weight: bolder;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.timer-container span {
+    font-size: 36px;
+    padding: 10px 15px;
+    background-color: rgb(99, 99, 99);
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 5px;
+}
+
+.timer-container span #text {
+    display: inline-block;
+    margin-right: 3px;
+}
+
+.custom-modal .modal-body {
+    max-height: calc(115vh - 210px);
+    padding: 20px;
+}

@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro:600&display=swap');
+
+.problem-section {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    min-height: 10rem;
+    border-radius: 5px;
+    padding: 25px;
+}
+
+.problems-message {
+    font-size: 18px;
+    padding: 15px 10px;
+    padding-top: 25px;
+    font-weight: bold;
+    width: 85%;
+    border-radius: 3px;
+    margin: 0 auto;
+    background: linear-gradient(rgba(255, 255, 255, 0.589), rgba(255, 255, 255, 0.589)), url("../../imgs/problems-bg.jpg");
+    font-family: 'Source Code Pro', monospace;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.problems-container {
+    padding: 5px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
