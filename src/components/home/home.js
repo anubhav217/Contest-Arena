@@ -9,8 +9,6 @@ const Home = () => {
 	const [count, setCount] = useState(1);
 
 	useEffect(() => {
-		// document.title = `You clicked ${count} times`;
-		console.log("Count: " + count);
 		setCount(1);
 	}, [count]);
 

@@ -65,6 +65,7 @@ export default class Contest extends Component {
 							contestCode={this.state.rank_list_code}
 							user_session={this.props.user_session}
 							logout={this.props.logout}
+							refresh_token={this.props.refresh_token}
 						></Rankings>
 					</Modal.Body>
 				</Modal>
@@ -134,7 +135,7 @@ export default class Contest extends Component {
 				error => {
 					console.log(error.message);
 					if (error.message == 401) {
-						this.props.logout();
+						this.props.refresh_token();
 					}
 				}
 			);
@@ -265,6 +266,7 @@ export default class Contest extends Component {
 					<Problems
 						user_session={this.props.user_session}
 						logout={this.props.logout}
+						refresh_token={this.props.refresh_token}
 						setRankListCode={this.setRankListCode}
 						contest_code={this.state.contest_code}
 						resetSearch={this.resetSearch}

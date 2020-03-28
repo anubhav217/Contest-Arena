@@ -141,7 +141,7 @@ export default function(props) {
 								error2 => {
 									console.log(error2.message);
 									if (error2.message == 401) {
-										props.logout();
+										props.refresh_token();
 									}
 								}
 							);
@@ -150,7 +150,7 @@ export default function(props) {
 				error => {
 					console.log(error.message);
 					if (error.message == 401) {
-						props.logout();
+						props.refresh_token();
 					}
 				}
 			);

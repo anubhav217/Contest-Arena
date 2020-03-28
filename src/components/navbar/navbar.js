@@ -5,6 +5,7 @@ import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { Link, withRouter } from "react-router-dom";
+// import APILogin from "../api-login/api_login";
 
 //Import styles
 import "./style.css";
@@ -13,6 +14,11 @@ class AppNavbar extends Component {
 	responseCodechef = response => {
 		this.props.login(response);
 		this.props.history.push("/contest");
+	};
+
+	loginFailure = response => {
+		alert("Some error occured. Try again.");
+		this.props.history.push("/");
 	};
 
 	render() {
@@ -25,7 +31,7 @@ class AppNavbar extends Component {
 				className="loginbtn"
 				buttonText="Login With CodeChef"
 				onSuccess={this.responseCodechef}
-				onFailure={this.responseCodechef}
+				onFailure={this.loginFailure}
 			/>
 		);
 

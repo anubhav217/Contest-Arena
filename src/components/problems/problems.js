@@ -78,7 +78,7 @@ export default class Problems extends Component {
 									error => {
 										console.log(error.message);
 										if (error.message == 401) {
-											this.props.logout();
+											this.props.refresh_token();
 										}
 										if (error.message == 429 && !too_many) {
 											alert("Too many API requests!");
@@ -108,7 +108,7 @@ export default class Problems extends Component {
 				error => {
 					console.log(error.message);
 					if (error.message == 401) {
-						this.props.logout();
+						this.props.refresh_token();
 					}
 					if (error.message == 429 && !too_many) {
 						alert("Too many API requests!");
@@ -228,7 +228,7 @@ export default class Problems extends Component {
 										error => {
 											console.log(error.message);
 											if (error.message == 401) {
-												this.props.logout();
+												this.props.refresh_token();
 											}
 											if (
 												error.message == 429 &&
@@ -263,7 +263,7 @@ export default class Problems extends Component {
 					error => {
 						console.log(error.message);
 						if (error.message == 401) {
-							this.props.logout();
+							this.props.refresh_token();
 						}
 						if (error.message == 429 && !too_many) {
 							alert("Too many requests!");
@@ -416,6 +416,7 @@ export default class Problems extends Component {
 									: this.state.curr_category
 							}
 							logout={this.props.logout}
+							refresh_token={this.props.refresh_token}
 						>
 							<img src={require("../../imgs/spi.svg")}></img>
 						</Submissions>

@@ -54,7 +54,7 @@ export default class Rankings extends Component {
 				error => {
 					console.log(error.message);
 					if (error.message == 401) {
-						this.props.logout();
+						this.props.refresh_token();
 					}
 					if (error.message == 429 && !too_many) {
 						alert("Too many requests!");

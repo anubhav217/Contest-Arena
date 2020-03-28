@@ -46,7 +46,7 @@ export default class SuccessfulSubmissions extends Component {
 				error => {
 					console.log(error.message);
 					if (error.message == 401) {
-						this.props.logout();
+						this.props.refresh_token();
 					}
 				}
 			);

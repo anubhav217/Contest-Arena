@@ -40,6 +40,7 @@ export default class ProblemDetails extends Component {
 						problem_code={this.state.problem_code}
 						user_session={this.props.user_session}
 						logout={this.props.logout}
+						refresh_token={this.props.refresh_token}
 						setStatus={code => this.setStatus(code)}
 					></ProblemStatement>
 				</Tab>
@@ -49,6 +50,7 @@ export default class ProblemDetails extends Component {
 						problem_code={this.state.problem_code}
 						user_session={this.props.user_session}
 						logout={this.props.logout}
+						refresh_token={this.props.refresh_token}
 					></SuccessfulSubmissions>
 				</Tab>
 			</Tabs>
@@ -65,6 +67,7 @@ export default class ProblemDetails extends Component {
 						<Editor
 							user_session={this.props.user_session}
 							logout={this.props.logout}
+							refresh_token={this.props.refresh_token}
 						></Editor>
 					</div>
 				</div>
