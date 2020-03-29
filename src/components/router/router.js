@@ -15,7 +15,7 @@ const Router = props => (
 			exact
 			path="/contest"
 			component={Contest}
-			refresh_token = {props.refresh_token}
+			refresh_token={props.refresh_token}
 		/>
 		<ProtectedRoute
 			isAuthenticated={props.isAuthenticated}
@@ -24,7 +24,8 @@ const Router = props => (
 			exact
 			path="/problems/:id/:contest_code"
 			component={ProblemDetails}
-			refresh_token = {props.refresh_token}
+			refresh_token={props.refresh_token}
+			username={props.username}
 		/>
 		<Route exact path="/" component={Home} />
 		<Route path="*" exact component={Error404} />
@@ -37,6 +38,7 @@ const ProtectedRoute = ({
 	user_session: user_session,
 	logout: logout,
 	refresh_token: refresh_token,
+	username: username,
 	...rest
 }) => {
 	// console.log(rest);
@@ -51,6 +53,7 @@ const ProtectedRoute = ({
 						user_session={user_session}
 						logout={logout}
 						refresh_token={refresh_token}
+						username={username}
 					/>
 				) : (
 					<Redirect

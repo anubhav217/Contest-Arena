@@ -50,7 +50,7 @@ const Home = () => {
 						},
 						polygon: {
 							enable: true,
-							scale: 0.5,
+							scale: 0.48,
 							type: "inline",
 							move: {
 								radius: 10

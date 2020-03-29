@@ -225,3 +225,20 @@
     font-family: 'Source Code Pro', monospace;
     border: 1px solid grey;
 }
+
+.f-icon-container,
+.save-btn {
+    display: inline-block;
+    margin-left: 5px;
+    color: rgb(133, 133, 133);
+    font-size: 22px;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.f-icon-container:hover,
+.save-btn:hover {
+    color: rgb(65, 65, 65);
+}

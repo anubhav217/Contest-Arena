@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { withRouter } from "react-router-dom";
 
 import Editor from "@monaco-editor/react";
 import { FillSpinner as Loader } from "react-spinners-kit";
@@ -6,9 +7,11 @@ import Toggle from "react-toggle";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Submit from "../submit/submit";
+import Cookie from "react-cookies";
+
 import "./editor.css";
 
-export default function(props) {
+export default withRouter(function(props) {
 	const [theme, setTheme] = useState("dark");
 	const [language, setLanguage] = useState("cpp");
 	const [isEditorReady, setIsEditorReady] = useState(false);
@@ -16,6 +19,54 @@ export default function(props) {
 	const [testOutput, setTestOutput] = useState("");
 	const [isWaiting, setIsWaiting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
+	const [fullscreen, setFullscreen] = useState(props.fullscreen);
+	const [curCode, setCurCode] = useState("");
+
+	const toggleScreen = () => {
+		saveCode();
+		setFullscreen(!fullscreen);
+		props.toggleScreen();
+	};
+
+	useEffect(() => {
+		fetchPreviousCode();
+
+		return () => {
+			saveCode();
+		};
+	}, []);
+
+	useEffect(() => {
+		fetchPreviousCode();
+		// do componentDidUpate logic
+		let full_screen_icon = (
+			<div className="f-icon-container" onClick={toggleScreen}>
+				<i className="fas fa-compress"></i>
+			</div>
+		);
+
+		if (!fullscreen) {
+			full_screen_icon = (
+				<div className="f-icon-container" onClick={toggleScreen}>
+					<i className="fas fa-expand"></i>
+				</div>
+			);
+		}
+	});
+
+	let full_screen_icon = (
+		<div className="f-icon-container" onClick={toggleScreen}>
+			<i className="fas fa-compress"></i>
+		</div>
+	);
+
+	if (!fullscreen) {
+		full_screen_icon = (
+			<div className="f-icon-container" onClick={toggleScreen}>
+				<i className="fas fa-expand"></i>
+			</div>
+		);
+	}
 
 	let output_content = null;
 
@@ -42,6 +93,58 @@ export default function(props) {
 		javascript: "JS",
 		python: "PYTH 3.6",
 		c: "C"
+	};
+
+	const saveCode = () => {
+		const username = Cookie.load("user_name");
+		if (username) {
+			const cur_code = valueGetter.current();
+
+			fetch("http://api.contest-arena/code", {
+				method: "POST",
+				headers: {
+					"content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					pcode: props.problem_code,
+					ccode: props.contest_code,
+					uid: username,
+					code: cur_code
+				})
+			})
+				.then(response => response.text())
+				.then(() => {})
+				.catch(error => console.log("error", error));
+		}
+	};
+
+	const fetchPreviousCode = () => {
+		const username = Cookie.load("user_name");
+		if (username) {
+			fetch(
+				`http://api.contest-arena/code/${props.contest_code}/${props.problem_code}/${username}`,
+				{
+					method: "GET",
+					headers: {
+						Accept: "application/json"
+					}
+				}
+			)
+				.then(res => {
+					if (res.ok) {
+						return res.json();
+					} else {
+						throw new Error(res.status);
+					}
+				})
+				.then(result => {
+					// console.log(result.result.body);
+					if (result.result.body) {
+						setCurCode(result.result.body);
+					}
+				})
+				.catch(error => console.log("error", error));
+		}
 	};
 
 	const [show, setShow] = useState(false);
@@ -91,9 +194,6 @@ export default function(props) {
 			})
 			.then(
 				result => {
-					// console.log(
-					// 	`https://api.codechef.com/ide/status?link=${result.result.data.link}`
-					// );
 					setTimeout(() => {
 						fetch(
 							`https://api.codechef.com/ide/status?link=${result.result.data.link}`,
@@ -116,7 +216,7 @@ export default function(props) {
 							})
 							.then(
 								result2 => {
-									console.log(result2);
+									// console.log(result2);
 									let compile_info =
 										result2.result.data.cmpinfo;
 									let stderr_info =
@@ -249,13 +349,11 @@ export default function(props) {
 								<option value="python">Python 3.6</option>
 								<option value="c">C</option>
 							</select>
-
-							{/* <button
-								onClick={toggleLanguage}
-								disabled={!isEditorReady}
-							>
-								Toggle language
-							</button> */}
+							<div className="save-btn" onClick={saveCode}>
+								<i className="fas fa-save"></i>
+							</div>
+							{full_screen_icon}
+							<div>{}</div>
 						</div>
 					</div>
 				</div>
@@ -266,7 +364,9 @@ export default function(props) {
 						theme={theme}
 						language={language}
 						loading={<Loader />}
-						value={"//Code your heart out here!"}
+						value={
+							curCode ? curCode : "//Code your heart out here!"
+						}
 						editorDidMount={handleEditorDidMount}
 						options={{ lineNumbers: "on" }}
 					/>
@@ -274,4 +374,4 @@ export default function(props) {
 			</div>
 		</>
 	);
-}
+});

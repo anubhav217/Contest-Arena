@@ -37,7 +37,7 @@ export default class SuccessfulSubmissions extends Component {
 			})
 			.then(
 				result => {
-					console.log(result);
+					// console.log(result);
 					this.setState({
 						isWaiting: false,
 						submissions: result.result.data.content
