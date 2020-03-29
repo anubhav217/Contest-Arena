@@ -16,7 +16,8 @@ export default class Contest extends Component {
 			suggestions: [],
 			query: "",
 			contest_code: "",
-			rank_list_code: ""
+			rank_list_code: "",
+			show_results: true
 		};
 	}
 
@@ -99,12 +100,19 @@ export default class Contest extends Component {
 
 	ContestEnd = () => <div className="timer-text">The contest has ended</div>;
 
-	resetSearch = () => {
-		this.setState({
-			suggestions: [],
-			query: "",
-			contest_code: ""
-		});
+	resetSearch = (keepSearchQuery = false) => {
+		if (keepSearchQuery) {
+			this.setState({
+				suggestions: [],
+				contest_code: ""
+			});
+		} else {
+			this.setState({
+				suggestions: [],
+				query: "",
+				contest_code: ""
+			});
+		}
 	};
 
 	componentDidMount() {
@@ -242,8 +250,23 @@ export default class Contest extends Component {
 							placeholder="Enter contest name or code..."
 							value={this.state.query}
 							onChange={this.getResults}
+							onBlur={() => {
+								setTimeout(() => {
+									this.setState({ show_results: false });
+								}, 200);
+							}}
+							onFocus={() => {
+								this.setState({ show_results: true });
+							}}
 						></input>
-						<ul className="search-result list-group">
+						<ul
+							className="search-result list-group"
+							style={{
+								display: this.state.show_results
+									? "block"
+									: "none"
+							}}
+						>
 							{search_results}
 						</ul>
 					</div>

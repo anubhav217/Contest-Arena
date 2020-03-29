@@ -104,13 +104,6 @@ export default class ProblemDetails extends Component {
 		);
 	};
 
-	/*componentDidUpdate(prevProps, prevState) {
-		if (prevProps.username != this.props.username) {
-			// console.log("KUIOO");
-			this.fetchPreviousCode();
-		}
-	}*/
-
 	render() {
 		let contents = null;
 
@@ -118,10 +111,10 @@ export default class ProblemDetails extends Component {
 			contents = (
 				<div className="problem-details-container">
 					<div className="row">
-						<div className="col-md-6">
+						<div className="col-xl-6">
 							<this.ControlledTabs></this.ControlledTabs>
 						</div>
-						<div className="col-md-6">
+						<div className="col-xl-6">
 							<Editor
 								user_session={this.props.user_session}
 								logout={this.props.logout}

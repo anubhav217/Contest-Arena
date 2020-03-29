@@ -22,6 +22,8 @@ export default withRouter(function(props) {
 	const [fullscreen, setFullscreen] = useState(props.fullscreen);
 	const [curCode, setCurCode] = useState("");
 
+	const default_code_to_show = `//Code your heart out here!`;
+
 	const toggleScreen = () => {
 		saveCode();
 		setFullscreen(!fullscreen);
@@ -97,7 +99,7 @@ export default withRouter(function(props) {
 
 	const saveCode = () => {
 		const username = Cookie.load("user_name");
-		if (username) {
+		if (username && valueGetter.current() != default_code_to_show) {
 			const cur_code = valueGetter.current();
 
 			fetch("http://api.contest-arena/code", {
@@ -260,7 +262,7 @@ export default withRouter(function(props) {
 		<>
 			<div className="editor-container">
 				<div className="row options-container">
-					<div className="col-md-6">
+					<div className="col-sm-6">
 						<div className="test-container">
 							<Button
 								onClick={handleShow}
@@ -322,7 +324,7 @@ export default withRouter(function(props) {
 							<Submit disabled={!isEditorReady}></Submit>
 						</div>
 					</div>
-					<div className="col-md-6 text-right">
+					<div className="col-sm-6">
 						<div className="config-container">
 							<div className="theme-container">
 								<label
@@ -364,9 +366,7 @@ export default withRouter(function(props) {
 						theme={theme}
 						language={language}
 						loading={<Loader />}
-						value={
-							curCode ? curCode : "//Code your heart out here!"
-						}
+						value={curCode ? curCode : default_code_to_show}
 						editorDidMount={handleEditorDidMount}
 						options={{ lineNumbers: "on" }}
 					/>

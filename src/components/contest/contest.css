@@ -72,3 +72,27 @@
     max-height: calc(115vh - 210px);
     padding: 20px;
 }
+
+@media only screen and (max-width: 772px) {
+    .section-container {
+        margin-bottom: 147%;
+    }
+}
+
+@media only screen and (max-width: 532px) {
+    .section-container {
+        margin-bottom: 170%;
+    }
+}
+
+@media only screen and (max-width: 468px) {
+    .section-container {
+        margin-bottom: 200%;
+    }
+}
+
+@media only screen and (max-width: 420px) {
+    .section-container {
+        margin-bottom: 236%;
+    }
+}

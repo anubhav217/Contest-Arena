@@ -160,6 +160,7 @@
 
 .config-container {
     margin-bottom: 10px;
+    text-align: right;
 }
 
 .theme-container {
@@ -241,4 +242,29 @@
 .f-icon-container:hover,
 .save-btn:hover {
     color: rgb(65, 65, 65);
+}
+
+@media only screen and (max-width:1200px) {
+    .f-icon-container {
+        display: none;
+    }
+}
+
+@media only screen and (max-width:576px) {
+    .test-container {
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .config-container {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+}
+
+@media only screen and (max-width:463px) {
+    .config-container {
+        margin-bottom: 10px;
+        text-align: right;
+    }
 }

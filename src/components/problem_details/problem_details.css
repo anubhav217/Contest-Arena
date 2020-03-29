@@ -1,5 +1,85 @@
 .problem-details-container {
-	margin-bottom: 23%;
-	padding-right: 7px;
-	padding-left: 7px;
+    margin-bottom: 23%;
+    padding-right: 7px;
+    padding-left: 7px;
+}
+
+@media only screen and (max-width:1200px) {
+    .problem-details-container {
+        margin-bottom: 44%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:998px) {
+    .problem-details-container {
+        margin-bottom: 65%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:767px) {
+    .problem-details-container {
+        margin-bottom: 115%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:630px) {
+    .problem-details-container {
+        margin-bottom: 115%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:611px) {
+    .problem-details-container {
+        margin-bottom: 132%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:576px) {
+    .problem-details-container {
+        margin-bottom: 165%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:476px) {
+    .problem-details-container {
+        margin-bottom: 190%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:435px) {
+    .problem-details-container {
+        margin-bottom: 220%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:380px) {
+    .problem-details-container {
+        margin-bottom: 246%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+}
+
+@media only screen and (max-width:347px) {
+    .problem-details-container {
+        margin-bottom: 282%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
 }

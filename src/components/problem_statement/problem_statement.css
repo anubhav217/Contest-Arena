@@ -84,3 +84,15 @@
 .tab-fscreen-icon:hover {
     color: rgb(65, 65, 65);
 }
+
+@media only screen and (max-width:1200px) {
+    .problem-details-container {
+        margin-bottom: 44%;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+
+    .tab-f-icon-container {
+        display: none;
+    }
+}

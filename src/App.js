@@ -6,18 +6,11 @@ import Navbar from "./components/navbar/navbar";
 import Router from "./components/router/router";
 import Footer from "./components/footer/footer";
 import Cookie from "react-cookies";
-// import { useCookies } from 'react-cookie';
 
 export default withRouter(
 	class App extends Component {
 		constructor(props) {
 			super(props);
-			// console.log(Cookie.load("user_session"));
-
-			/*let user_session_data = JSON.parse(
-			localStorage.getItem("user_session")
-			// Cookie.load("user_session")
-		);*/
 
 			let user_session_data = Cookie.load("user_session");
 
@@ -42,55 +35,66 @@ export default withRouter(
 		}
 
 		refresh_token = () => {
-			console.log(this.state.user_session.refresh_token);
+			let user_session_data = Cookie.load("user_session");
+			if (user_session_data) {
+				console.log(user_session_data.refresh_token);
 
-			fetch("https://api.codechef.com/oauth/token", {
-				method: "POST",
-				headers: {
-					"content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					grant_type: "refresh_token",
-					refresh_token: this.state.user_session.refresh_token,
-					client_id: "c05ec8e1ed3b1e305a62308a140bb50b",
-					client_secret: "8990a3aeae4b9746f3ec00ffc2930780"
-				})
-			})
-				.then(res => {
-					if (res.ok) {
-						return res.json();
-					} else {
-						throw new Error(res.status);
-					}
-				})
-				.then(
-					result => {
-						console.log(result);
-
-						// console.log(result.result.data.content.contestList);
-						this.setState({
-							user_session: {
-								isAuthenticated: true,
-								expires_in: result.result.data.expires_in,
-								access_token: result.result.data.access_token,
-								refresh_token: result.result.data.refresh_token,
-								update_time: Date.now()
-							}
-						});
-
-						Cookie.save("user_session", this.state.user_session, {
-							path: "/",
-							maxAge: 604800,
-							expires: new Date(Date.now() + 604800000)
-						});
-
-						// if (coming_from) this.props.history.push(coming_from);
+				fetch("https://api.codechef.com/oauth/token", {
+					method: "POST",
+					headers: {
+						"content-Type": "application/json"
 					},
-					error => {
-						console.log(error.message);
-						this.logout();
-					}
-				);
+					body: JSON.stringify({
+						grant_type: "refresh_token",
+						refresh_token: user_session_data.refresh_token,
+						client_id: "c05ec8e1ed3b1e305a62308a140bb50b",
+						client_secret: "8990a3aeae4b9746f3ec00ffc2930780"
+					})
+				})
+					.then(res => {
+						if (res.ok) {
+							return res.json();
+						} else {
+							throw new Error(res.status);
+						}
+					})
+					.then(
+						result => {
+							console.log(result);
+
+							// console.log(result.result.data.content.contestList);
+							this.setState({
+								user_session: {
+									isAuthenticated: true,
+									expires_in: result.result.data.expires_in,
+									access_token:
+										result.result.data.access_token,
+									refresh_token:
+										result.result.data.refresh_token,
+									update_time: Date.now()
+								}
+							});
+
+							Cookie.save(
+								"user_session",
+								this.state.user_session,
+								{
+									path: "/",
+									maxAge: 604800,
+									expires: new Date(Date.now() + 604800000)
+								}
+							);
+
+							this.getUserName();
+
+							// if (coming_from) this.props.history.push(coming_from);
+						},
+						error => {
+							console.log(error.message);
+							this.logout();
+						}
+					);
+			}
 		};
 
 		login = response => {
@@ -133,40 +137,44 @@ export default withRouter(
 			});
 		};
 
-		componentDidMount() {
-			if (this.state.user_session.isAuthenticated) {
-				fetch("https://api.codechef.com/users/me", {
-					headers: {
-						Accept: "application/json",
-						Authorization:
-							"Bearer " + this.state.user_session.access_token
+		getUserName = () => {
+			fetch("https://api.codechef.com/users/me", {
+				headers: {
+					Accept: "application/json",
+					Authorization:
+						"Bearer " + this.state.user_session.access_token
+				}
+			})
+				.then(res => {
+					if (res.ok) {
+						return res.json();
+					} else {
+						throw new Error(res.status);
 					}
 				})
-					.then(res => {
-						if (res.ok) {
-							return res.json();
-						} else {
-							throw new Error(res.status);
+				.then(
+					result => {
+						this.setState({
+							user_name: result.result.data.content.username
+						});
+						Cookie.save("user_name", this.state.user_name, {
+							path: "/",
+							maxAge: 6048000,
+							expires: new Date(Date.now() + 604800000)
+						});
+					},
+					error => {
+						console.log(error.message);
+						if (error.message == 401) {
+							this.refresh_token();
 						}
-					})
-					.then(
-						result => {
-							this.setState({
-								user_name: result.result.data.content.username
-							});
-							Cookie.save("user_name", this.state.user_name, {
-								path: "/",
-								maxAge: 6048000,
-								expires: new Date(Date.now() + 604800000)
-							});
-						},
-						error => {
-							console.log(error.message);
-							if (error.message == 401) {
-								this.logout();
-							}
-						}
-					);
+					}
+				);
+		};
+
+		componentDidMount() {
+			if (this.state.user_session.isAuthenticated) {
+				this.getUserName();
 			}
 		}
 
@@ -175,38 +183,7 @@ export default withRouter(
 				this.state.user_session.isAuthenticated &&
 				!prevState.user_session.isAuthenticated
 			) {
-				fetch("https://api.codechef.com/users/me", {
-					headers: {
-						Accept: "application/json",
-						Authorization:
-							"Bearer " + this.state.user_session.access_token
-					}
-				})
-					.then(res => {
-						if (res.ok) {
-							return res.json();
-						} else {
-							throw new Error(res.status);
-						}
-					})
-					.then(
-						result => {
-							this.setState({
-								user_name: result.result.data.content.username
-							});
-							Cookie.save("user_name", this.state.user_name, {
-								path: "/",
-								maxAge: 6048000,
-								expires: new Date(Date.now() + 604800000)
-							});
-						},
-						error => {
-							console.log(error.message);
-							if (error.message == 401) {
-								this.refresh_token();
-							}
-						}
-					);
+				this.getUserName();
 			}
 		}
 

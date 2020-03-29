@@ -30,3 +30,88 @@
     font-size: 22px;
     margin-top: 10px;
 }
+
+@media only screen and (max-width: 1134px) {
+    .heading-primary {
+        font-size: 4rem;
+    }
+
+    .loop-text {
+        font-size: 15px;
+    }
+}
+
+@media only screen and (max-width:1323px) {
+    .particle-container {
+        margin-bottom: 0;
+        padding-bottom: 38rem;
+    }
+}
+
+@media only screen and (max-width:1025px) {
+    .particle-container {
+        margin-bottom: 0;
+        padding-bottom: 27rem;
+    }
+
+    .heading-primary {
+        font-size: 4rem;
+    }
+
+    canvas {
+        height: 42rem !important;
+    }
+
+    .loop-text {
+        font-size: 15px;
+    }
+}
+
+@media only screen and (max-width:980px) {
+    .particle-container {
+        margin-bottom: 12%;
+        padding-top: 0;
+        padding-bottom: 27rem;
+    }
+
+    .heading-primary {
+        font-size: 5rem;
+        text-align: center;
+        margin-top: 0;
+    }
+
+    .heading-secondary {
+        padding-right: 0;
+        font-size: 3rem;
+        text-align: center;
+    }
+
+    canvas {
+        height: 42rem !important;
+    }
+
+    .loop-text {
+        font-size: 15px;
+        text-align: center;
+    }
+}
+
+@media only screen and (max-width:760px) {
+    .particle-container {
+        margin-bottom: 45%;
+        padding-top: 0;
+        padding-bottom: 27rem;
+    }
+}
+
+@media only screen and (max-width:695px) {
+    .particle-container {
+        margin-bottom: 125%;
+        padding-top: 0;
+        padding-bottom: 27rem;
+    }
+
+    .heading-primary {
+        font-size: 3rem;
+    }
+}

@@ -19,7 +19,7 @@ const Home = () => {
 	};
 	return (
 		<div className="particle-container row">
-			<div className="col-md-6">
+			<div className="col-lg-6">
 				<Particles
 					params={{
 						fps_limit: 28,
@@ -84,7 +84,7 @@ const Home = () => {
 					}}
 				/>
 			</div>
-			<div className="col-md-6">
+			<div className="col-lg-6">
 				<div className="heading-primary">CONTEST</div>
 				<div className="heading-secondary">Arena</div>
 				<div className="loop-text">
