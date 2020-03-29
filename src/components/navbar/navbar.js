@@ -26,7 +26,7 @@ class AppNavbar extends Component {
 			<CodechefLogin
 				clientId="c05ec8e1ed3b1e305a62308a140bb50b"
 				clientSecret="8990a3aeae4b9746f3ec00ffc2930780"
-				redirectUri="http://localhost:3000"
+				redirectUri="https://safe-wildwood-95576.herokuapp.com/"
 				state="xyzabc"
 				className="loginbtn"
 				buttonText="Login With CodeChef"
