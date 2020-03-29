@@ -2,6 +2,12 @@ import React, { useState } from "react";
 
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+
+/**
+ * A mock submission info component. Returns AC or WA randomly.
+ *
+ * @param {props} props Arguments passed as attributes to the component
+ */
 export default function SubmitModal(props) {
 	const [show, setShow] = useState(false);
 

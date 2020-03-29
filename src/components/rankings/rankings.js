@@ -5,7 +5,18 @@ import Pagination from "react-js-pagination";
 
 import "./ranklist.css";
 
+/**
+ * Fetches the ranklist of the current contest.
+ */
 export default class Rankings extends Component {
+	/**
+	 * The first method to be called on instantiating the component. Responsible for initializing the various states of the component.
+	 * rankings: The list of rankings data
+	 * isWaiting: Tracks if component is in waiting state or not
+	 * activePage: Tracks the current page number.
+	 *
+	 * @param {Object} props Arguements that are passed as attributes to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.rankings = [];
@@ -14,10 +25,14 @@ export default class Rankings extends Component {
 			is_waiting: false,
 			activePage: 1
 		};
-		// console.log("In ranklist!!");
 	}
 
-	fetchRanklistData = () => {
+	/**
+	 * Fetch the ranklist data for the selected contest
+	 *
+	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
+	 */
+	fetchRanklistData = firstTime => {
 		this.setState({
 			is_waiting: true
 		});
@@ -44,7 +59,6 @@ export default class Rankings extends Component {
 			})
 			.then(
 				result => {
-					// console.log(result.result.data.content.contestList);
 					this.rankings = result.result.data.content;
 					this.setState({
 						rankings: this.rankings.slice(0, 10),
@@ -52,9 +66,9 @@ export default class Rankings extends Component {
 					});
 				},
 				error => {
-					console.log(error.message);
-					if (error.message == 401) {
+					if (error.message == 401 && firstTime) {
 						this.props.refresh_token();
+						this.fetchRanklistData(!firstTime);
 					}
 					if (error.message == 429 && !too_many) {
 						alert("Too many requests!");
@@ -75,8 +89,10 @@ export default class Rankings extends Component {
 			);
 	};
 
+	/**
+	 * Event handler for page number change
+	 */
 	handlePageChange = pageNumber => {
-		console.log(`active page is ${pageNumber}`);
 		this.setState({
 			activePage: pageNumber,
 			rankings: this.rankings.slice(
@@ -86,18 +102,30 @@ export default class Rankings extends Component {
 		});
 	};
 
+	/**
+	 * Called when component is successfully mounted.
+	 */
 	componentDidMount() {
 		if (this.props.contestCode != "") {
-			this.fetchRanklistData();
+			this.fetchRanklistData(true);
 		}
 	}
 
+	/**
+	 * Callen on component update
+	 *
+	 * @param {Object} prevProps Previous instance of props
+	 * @param {Object} prevState Previous instance of component state
+	 */
 	componentDidUpdate(prevProps, prevState) {
 		if (this.props.contestCode != prevProps.contestCode) {
-			this.fetchRanklistData();
+			this.fetchRanklistData(true);
 		}
 	}
 
+	/**
+	 * Render JSX
+	 */
 	render() {
 		let ranklist = (
 			<div className="ranklist-title">No rankings to fetch!</div>
@@ -128,9 +156,7 @@ export default class Rankings extends Component {
 									<td>{item.rank}</td>
 									<td>{item.username}</td>
 									<td>
-										{/* {item.countryCode} */}
 										<ReactCountryFlag
-											// className="emojiFlag"
 											countryCode={item.countryCode}
 											svg
 											cdnSuffix="svg"

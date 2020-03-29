@@ -6,9 +6,23 @@ import Countdown from "react-countdown";
 import Rankings from "../rankings/rankings";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Cookie from "react-cookies";
 import { useState } from "react";
 
+/**
+ * This Component contains the search bar, problems, recent submissions and rankings.
+ * This is a stateful component.
+ */
+
 export default class Contest extends Component {
+	/**
+	 * First method called on instantiating the component.
+	 * Initializes the list of contests available from the Codechef API.
+	 * The states are initialized for search suggestions, query, contest code selected,
+	 * rank list code and whether to show the search results or not
+	 *
+	 * @param {Object} props Arguments that are passed to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.contest_list = [];
@@ -21,21 +35,37 @@ export default class Contest extends Component {
 		};
 	}
 
+	/**
+	 * Sets the contest code whose ranklist is to be seen.
+	 *
+	 * @param {string} code The contest code whose ranklist is to be seen
+	 */
 	setRankListCode = code => {
 		this.setState({
 			rank_list_code: code
 		});
 	};
 
+	/**
+	 * Get the search results from the contest list, based on the query.
+	 *
+	 * @param {Object} event The event object related to the DOM Element on which the event was triggered
+	 */
 	getResults = event => {
-		const q = event.target.value;
+		let q = event.target.value;
+		q = q.trim();
 		let suggestions = [];
 		if (q.length > 0) {
-			const regx = new RegExp(`^${q}`, "i");
-			suggestions = this.contest_list.filter(
-				item => regx.test(item.code) || regx.test(item.name)
-			);
-			// console.log(suggestions.slice(0, 5));
+			suggestions = this.contest_list.filter(item => {
+				let c1 = item.code.toLowerCase();
+				let c2 = item.name.toLowerCase();
+				let search_query = q.toLowerCase();
+				search_query = search_query.trim();
+				return (
+					c1.indexOf(search_query) > -1 ||
+					c2.indexOf(search_query) > -1
+				);
+			});
 		}
 		this.setState({
 			query: q,
@@ -43,6 +73,9 @@ export default class Contest extends Component {
 		});
 	};
 
+	/**
+	 * Ranklist modal containing the ranklist table. It's a functional component.
+	 */
 	Ranklist = () => {
 		const [lgShow, setLgShow] = useState(false);
 
@@ -74,8 +107,17 @@ export default class Contest extends Component {
 		);
 	};
 
+	/**
+	 * Modifies the state of the contest component, when a contest is selected from the
+	 * search results.
+	 *
+	 * @param {string} code The code of the selected contest
+	 * @param {string} name The name of the selected contest
+	 * @param {Timestamp} now The current timestamp
+	 * @param {Timestamp} start The timestamp when the contest started
+	 * @param {Timestamp} end The timestamp when the contest ended
+	 */
 	onContestSelect = (code, name, now, start, end) => {
-		// console.log("HERE !!!");
 		let started = true;
 		if (start > now) {
 			started = false;
@@ -90,6 +132,9 @@ export default class Contest extends Component {
 		});
 	};
 
+	/**
+	 * Modifies the timer component based on contest start time
+	 */
 	ContestStart = () => {
 		return (
 			<Countdown date={Date.now() + (this.state.end - Date.now())}>
@@ -98,8 +143,16 @@ export default class Contest extends Component {
 		);
 	};
 
+	/**
+	 * Modifies the timer component based on contest end time
+	 */
 	ContestEnd = () => <div className="timer-text">The contest has ended</div>;
 
+	/**
+	 * Reset the search bar and search results
+	 *
+	 * @param {boolean} keepSearchQuery Option to keep the search query in the search bar
+	 */
 	resetSearch = (keepSearchQuery = false) => {
 		if (keepSearchQuery) {
 			this.setState({
@@ -115,47 +168,70 @@ export default class Contest extends Component {
 		}
 	};
 
-	componentDidMount() {
-		// console.log(this.props.user_session);
-		fetch(
-			"https://api.codechef.com/contests?fields=code,name,startDate,endDate",
-			{
-				method: "GET",
-				headers: {
-					Accept: "application/json",
-					Authorization:
-						"Bearer " + this.props.user_session.access_token
-				}
-			}
-		)
-			.then(res => {
-				if (res.ok) {
-					return res.json();
-				} else {
-					throw new Error(res.status);
-				}
-			})
-			.then(
-				result => {
-					// console.log(result.result.data.content.contestList);
-					this.contest_list = result.result.data.content.contestList;
-				},
-				error => {
-					console.log(error.message);
-					if (error.message == 401) {
-						this.props.refresh_token();
+	/**
+	 * Fetches the lists of contests from codechef API.
+	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
+	 */
+	fetchContestListData = firstTime => {
+		let user_session_data = Cookie.load("user_session");
+		if (user_session_data) {
+			console.log(firstTime);
+
+			fetch(
+				"https://api.codechef.com/contests?fields=code,name,startDate,endDate",
+				{
+					method: "GET",
+					headers: {
+						Accept: "application/json",
+						Authorization:
+							"Bearer " + user_session_data.access_token
 					}
 				}
-			);
+			)
+				.then(res => {
+					if (res.ok) {
+						return res.json();
+					} else {
+						throw new Error(res.status);
+					}
+				})
+				.then(
+					result => {
+						this.contest_list =
+							result.result.data.content.contestList;
+					},
+					error => {
+						if (error.message == 401 && firstTime) {
+							this.props.refresh_token();
+							this.fetchContestListData(!firstTime);
+						} else {
+							console.log(error.message);
+						}
+					}
+				);
+		}
+	};
+
+	/**
+	 * Called when the component is mounted successfully.
+	 * The list of available contests is fetched from the codechef API here.
+	 */
+	componentDidMount() {
+		this.fetchContestListData(true);
 	}
+
+	/**
+	 * Responsible for rendering the component and it's children.
+	 */
 	render() {
+		//Set the sear results
 		let search_results = null;
-		// console.log(this.state.suggestions);
 		search_results = this.state.suggestions.map(item => {
 			const now = Date.now();
 			const start = Date.parse(item.startDate);
 			const end = Date.parse(item.endDate);
-			// console.log(now, start, end);
+
+			//Setting the tag (past, present or upcoming contest)
 			let pill = null;
 
 			if (now < start) {
@@ -187,11 +263,13 @@ export default class Contest extends Component {
 					key={item.code}
 					className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
 				>
-					{item.name}
+					{item.name + " [" + item.code + "]"}
 					{pill}
 				</li>
 			);
 		});
+
+		//Set the timer according to the contest timings
 		let timer = null;
 		if (this.state.contest_code != "") {
 			if (Date.now() < this.state.start) {
@@ -252,6 +330,7 @@ export default class Contest extends Component {
 							onChange={this.getResults}
 							onBlur={() => {
 								setTimeout(() => {
+									//Setting a time delay, since a click on search result and this blur event happen simultaneously
 									this.setState({ show_results: false });
 								}, 200);
 							}}

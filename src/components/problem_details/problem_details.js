@@ -9,7 +9,21 @@ import SuccessfulSubmissions from "../successful_submissions/successful_submissi
 
 import "./problem_details.css";
 
+/**
+ * A stateful component that boostraps various other components related to the problem page, like the submissions, problem statement, editor, etc.
+ */
 export default class ProblemDetails extends Component {
+	/**
+	 * The first method called on instantiating the component. Responsible for various initializations.
+	 *
+	 * problem_code : The problem code passed in the url
+	 * contest_code : The contest code passed in the url
+	 * status : Determines whether the pair of problem code and contest code is ok (else 404).
+	 * p_fullscreen : Keeps tack of the whether the problem statement section is in full screen mode.
+	 * c_fullscreen : Keeps tack of the whether the editor section is in full screen mode.
+	 *
+	 * @param {Object} props Arguments passed to the component as props
+	 */
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -19,55 +33,41 @@ export default class ProblemDetails extends Component {
 			p_fullscreen: false,
 			c_fullscreen: false
 		};
-		// this.fetchPreviousCode();
 	}
 
+	/**
+	 * Toggles the full screen mode for the problem section
+	 */
 	handlePFullscreen = () => {
 		this.setState(prevState => ({
 			p_fullscreen: !prevState.p_fullscreen
 		}));
 	};
 
+	/**
+	 * Toggles the full screen mode for the code editor section
+	 */
 	handleCFullscreen = () => {
 		this.setState(prevState => ({
 			c_fullscreen: !prevState.c_fullscreen
 		}));
 	};
 
-	fetchPreviousCode = () => {
-		fetch(
-			`http://api.contest-arena/code/${this.state.contest_code}/${this.state.problem_code}/${this.props.username}`,
-			{
-				method: "GET",
-				headers: {
-					Accept: "application/json"
-				}
-			}
-		)
-			.then(res => {
-				if (res.ok) {
-					return res.json();
-				} else {
-					throw new Error(res.status);
-				}
-			})
-			.then(result => {
-				// console.log(result.result.body);
-				if (result.result.body) {
-					this.setState({
-						previousCode: result.result.body
-					});
-				}
-			})
-			.catch(error => console.log("error", error));
-	};
-
+	/**
+	 * Sets the status of the problem code and contest code pair (available or not)
+	 *
+	 * @param {string} code The status code passed
+	 */
 	setStatus = code => {
 		this.setState({
 			status: code
 		});
 	};
 
+	/**
+	 * Tabbed panel component; from react-bootstrap.
+	 * The individual tabs are problem statement and successful submissions section
+	 */
 	ControlledTabs = () => {
 		const [key, setKey] = useState("home");
 
@@ -104,6 +104,9 @@ export default class ProblemDetails extends Component {
 		);
 	};
 
+	/**
+	 * JSX to be rendered.
+	 */
 	render() {
 		let contents = null;
 

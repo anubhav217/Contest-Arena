@@ -5,28 +5,32 @@ import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { Link, withRouter } from "react-router-dom";
-// import APILogin from "../api-login/api_login";
 
-//Import styles
 import "./style.css";
 
+/**
+ * A stateful component containing the Navbar
+ */
 class AppNavbar extends Component {
+	//Callback function when there's a successful OAuth login by codechef
 	responseCodechef = response => {
 		this.props.login(response);
 		this.props.history.push("/contest");
 	};
 
+	//Callback function on login failure
 	loginFailure = response => {
 		alert("Some error occured. Try again.");
 		this.props.history.push("/");
 	};
 
+	//JSX to be rendered
 	render() {
 		let navBarRightContent = (
 			<CodechefLogin
 				clientId="c05ec8e1ed3b1e305a62308a140bb50b"
 				clientSecret="8990a3aeae4b9746f3ec00ffc2930780"
-				redirectUri="https://safe-wildwood-95576.herokuapp.com/"
+				redirectUri="http://localhost:3000"
 				state="xyzabc"
 				className="loginbtn"
 				buttonText="Login With CodeChef"

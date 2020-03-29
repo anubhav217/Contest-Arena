@@ -2,6 +2,9 @@ import React from "react";
 
 import "./footer.css";
 
+/**
+ * A stateless component responsible for rendering the footer
+ */
 export default function Footer() {
 	return (
 		<footer className="site-footer">

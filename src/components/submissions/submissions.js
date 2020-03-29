@@ -2,7 +2,17 @@ import React, { Component } from "react";
 
 import "./submissions.css";
 
+/**
+ * Stateful component which deals with recent submission information on the contest page
+ */
 export default class Submissions extends Component {
+	/**
+	 * The first method to be called on instantiating the component. Responsible for initializing the various states of the component.
+	 * submissions: The list of submissions data
+	 * isWaiting: Tracks if component is in waiting state or not
+	 *
+	 * @param {Object} props Arguements that are passed as attributes to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -11,7 +21,12 @@ export default class Submissions extends Component {
 		};
 	}
 
-	getRecentSubmissionData = () => {
+	/**
+	 * Fetch the recent submissions data from codechef API
+	 *
+	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
+	 */
+	getRecentSubmissionData = firstTime => {
 		this.setState({
 			is_waiting: true
 		});
@@ -38,7 +53,6 @@ export default class Submissions extends Component {
 			})
 			.then(
 				result => {
-					// console.log(result);
 					this.setState({
 						is_waiting: false,
 						submissions: result.result.data.content
@@ -46,8 +60,9 @@ export default class Submissions extends Component {
 				},
 				error => {
 					console.log(error.message);
-					if (error.message == 401) {
+					if (error.message == 401 && firstTime) {
 						this.props.refresh_token();
+						this.getRecentSubmissionData(!firstTime);
 					}
 					if (error.message == 429 && !too_many) {
 						alert("Too many API requests!");
@@ -62,17 +77,28 @@ export default class Submissions extends Component {
 			);
 	};
 
+	/**
+	 * Called on component update
+	 *
+	 * @param {Object} prevProps Previous instance of props
+	 * @param {Object} prevState Previous instance of component state
+	 */
 	componentDidUpdate(prevProps, prevState) {
-		// console.log("HERE!!! ", this.props.contest_code);
 		if (prevProps.contest_code != this.props.contest_code) {
-			this.getRecentSubmissionData();
+			this.getRecentSubmissionData(true);
 		}
 	}
 
+	/**
+	 * Refresh the current set of submissions information for the contest
+	 */
 	onRefresh = () => {
-		if (this.props.contest_code != "") this.getRecentSubmissionData();
+		if (this.props.contest_code != "") this.getRecentSubmissionData(true);
 	};
 
+	/**
+	 * Render JSX
+	 */
 	render() {
 		let submissions = (
 			<div className="text-center">No submissions to fetch</div>

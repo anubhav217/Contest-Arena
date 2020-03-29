@@ -1,9 +1,18 @@
 import React, { Component } from "react";
 
 import "./successful_submissions.css";
-import { Link } from "react-router-dom";
 
+/**
+ * Component containing the list of successful submissions information.
+ */
 export default class SuccessfulSubmissions extends Component {
+	/**
+	 * The first method to be called on instantiating the component. Responsible for initializing the various states of the component.
+	 * submissions: The list of successful submissions data
+	 * isWaiting: Tracks if component is in waiting state or not
+	 *
+	 * @param {Object} props Arguments passed as attributes to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -12,7 +21,12 @@ export default class SuccessfulSubmissions extends Component {
 		};
 	}
 
-	fetchData = () => {
+	/**
+	 * Fetch the successful submissions data from codechef API.
+	 *
+	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at first a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
+	 */
+	fetchData = firstTime => {
 		this.setState({
 			isWaiting: true
 		});
@@ -37,7 +51,6 @@ export default class SuccessfulSubmissions extends Component {
 			})
 			.then(
 				result => {
-					// console.log(result);
 					this.setState({
 						isWaiting: false,
 						submissions: result.result.data.content
@@ -45,17 +58,24 @@ export default class SuccessfulSubmissions extends Component {
 				},
 				error => {
 					console.log(error.message);
-					if (error.message == 401) {
+					if (error.message == 401 && firstTime) {
 						this.props.refresh_token();
+						this.fetchData(!firstTime);
 					}
 				}
 			);
 	};
 
+	/**
+	 * Method called when component is successfully mounted
+	 */
 	componentDidMount() {
 		this.fetchData();
 	}
 
+	/**
+	 * Render JSX
+	 */
 	render() {
 		let contents = null;
 

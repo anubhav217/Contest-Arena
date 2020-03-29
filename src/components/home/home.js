@@ -5,18 +5,26 @@ import Typist from "react-typist";
 
 import "./home.css";
 
+/**
+ * A stateless component rendering the Homepage with some fancy stuff.
+ */
 const Home = () => {
+	//Used to typist animation
 	const [count, setCount] = useState(1);
 
+	//Used to set the count
 	useEffect(() => {
 		setCount(1);
 	}, [count]);
 
+	//Set some time delay between animations
 	const stopDelay = () => {
 		setTimeout(() => {
 			setCount(0);
 		}, 1000);
 	};
+
+	//JSX to be rendered
 	return (
 		<div className="particle-container row">
 			<div className="col-lg-6">
@@ -90,9 +98,7 @@ const Home = () => {
 				<div className="loop-text">
 					{count ? (
 						<Typist avgTypingDelay={50} onTypingDone={stopDelay}>
-							<span>
-								Delve yourself into the battlefield of coding!
-							</span>
+							<span>The biggest battleground of chefs</span>
 							<Typist.Backspace count={46} delay={800} />
 							<span> printf("Begin the fight!")</span>
 						</Typist>

@@ -7,8 +7,19 @@ import Router from "./components/router/router";
 import Footer from "./components/footer/footer";
 import Cookie from "react-cookies";
 
+/**
+ * This is the Main App component, bootstraping all the other components.
+ * This is a stateful component.
+ */
 export default withRouter(
 	class App extends Component {
+		/**
+		 * First method called on instantiating the component.
+		 * Responsible for initializing the user session, from cookie
+		 * if present, else a fresh user session.
+		 *
+		 * @param {Object} props Arguments that are passed to the component
+		 */
 		constructor(props) {
 			super(props);
 
@@ -34,6 +45,10 @@ export default withRouter(
 			}
 		}
 
+		/**
+		 * Responsible for generating a new access token, when the current access token expires, and save it as a cookie.
+		 * If not possible, then logout and start a fresh session.
+		 */
 		refresh_token = () => {
 			let user_session_data = Cookie.load("user_session");
 			if (user_session_data) {
@@ -60,9 +75,6 @@ export default withRouter(
 					})
 					.then(
 						result => {
-							console.log(result);
-
-							// console.log(result.result.data.content.contestList);
 							this.setState({
 								user_session: {
 									isAuthenticated: true,
@@ -84,10 +96,6 @@ export default withRouter(
 									expires: new Date(Date.now() + 604800000)
 								}
 							);
-
-							this.getUserName();
-
-							// if (coming_from) this.props.history.push(coming_from);
 						},
 						error => {
 							console.log(error.message);
@@ -97,9 +105,13 @@ export default withRouter(
 			}
 		};
 
+		/**
+		 * Responsible for setting the storing the user session in a cookie after
+		 * the user is successfully logged in using the Codechef OAuth.
+		 *
+		 * @param {Object} response Contains the response object sent from Codechef containing the tokens.
+		 */
 		login = response => {
-			// console.log(response);
-
 			this.setState({
 				user_session: {
 					isAuthenticated: true,
@@ -114,14 +126,12 @@ export default withRouter(
 				maxAge: 6048000,
 				expires: new Date(Date.now() + 604800000)
 			});
-			/*localStorage.setItem(
-			"user_session",
-			JSON.stringify(this.state.user_session)
-		);*/
 		};
 
+		/**
+		 * Responsible for logging out the currently logged in user and clear the session cookies.
+		 */
 		logout = () => {
-			//localStorage.removeItem("user_session");
 			Cookie.remove("user_session", { path: "/" });
 			Cookie.remove("user_name", { path: "/" });
 			this.setState({
@@ -137,6 +147,9 @@ export default withRouter(
 			});
 		};
 
+		/**
+		 * Responsible for getting the username from the codechef API.
+		 */
 		getUserName = () => {
 			fetch("https://api.codechef.com/users/me", {
 				headers: {
@@ -172,12 +185,22 @@ export default withRouter(
 				);
 		};
 
+		/**
+		 * Called after a component is successfully mounted
+		 */
 		componentDidMount() {
 			if (this.state.user_session.isAuthenticated) {
 				this.getUserName();
 			}
 		}
 
+		/**
+		 * The method is called when component is updated to DOM.
+		 *
+		 * @param {Object} prevProps The props before update
+		 * @param {Object} prevState The state before update
+		 * @param {Object} snapshot Value returned by getSnapshotBeforeUpdate() lifecycle method, if used.
+		 */
 		componentDidUpdate(prevProps, prevState, snapshot) {
 			if (
 				this.state.user_session.isAuthenticated &&
@@ -187,6 +210,9 @@ export default withRouter(
 			}
 		}
 
+		/**
+		 * Responsible for rendering the component to the DOM.
+		 */
 		render() {
 			return (
 				<div className="App">

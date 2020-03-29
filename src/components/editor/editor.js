@@ -11,36 +11,62 @@ import Cookie from "react-cookies";
 
 import "./editor.css";
 
+/**
+ * The component responsible for rendering the code editor, and it's configurable options. It's a stateless component.
+ */
+
 export default withRouter(function(props) {
+	//Hooks for editor configuration.
 	const [theme, setTheme] = useState("dark");
 	const [language, setLanguage] = useState("cpp");
 	const [isEditorReady, setIsEditorReady] = useState(false);
+
+	//Hooks for testing, running and submitting for the current problem
 	const [testInput, setTestInput] = useState("");
 	const [testOutput, setTestOutput] = useState("");
 	const [isWaiting, setIsWaiting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
+
+	//Hooks for tracking and changing the full screen modes for problem statement and editor.
 	const [fullscreen, setFullscreen] = useState(props.fullscreen);
 	const [curCode, setCurCode] = useState("");
 
+	//Hook for showingand hiding the modal (pop-up)
+	const [show, setShow] = useState(false);
+
+	//Set the default code to show in the editor
 	const default_code_to_show = `//Code your heart out here!`;
 
+	//Stores an instance of the Editor, for utility reasons like, getting the code written etc.
+	const valueGetter = useRef();
+
+	/**
+	 * React hook; invoked when the component gets mounted, and unmonted. Equivalent to ComponentDidMount and componentWillUnmount for stateful components.
+	 */
+	useEffect(() => {
+		//called when component mounts
+		fetchPreviousCode_api();
+
+		return () => {
+			//called when component unmounts
+			saveCode_api();
+		};
+	}, []);
+
+	/**
+	 * Changes the full screen state
+	 */
 	const toggleScreen = () => {
 		saveCode();
 		setFullscreen(!fullscreen);
 		props.toggleScreen();
 	};
 
+	/**
+	 * Hook called on component update. Equivalent to ComponentDidUpdate.
+	 */
 	useEffect(() => {
 		fetchPreviousCode();
-
-		return () => {
-			saveCode();
-		};
-	}, []);
-
-	useEffect(() => {
-		fetchPreviousCode();
-		// do componentDidUpate logic
 		let full_screen_icon = (
 			<div className="f-icon-container" onClick={toggleScreen}>
 				<i className="fas fa-compress"></i>
@@ -56,6 +82,8 @@ export default withRouter(function(props) {
 		}
 	});
 
+	// Stores the initial JSX to be rendered for the full screen icon, based on the current state
+	/*******************************************************/
 	let full_screen_icon = (
 		<div className="f-icon-container" onClick={toggleScreen}>
 			<i className="fas fa-compress"></i>
@@ -69,7 +97,10 @@ export default withRouter(function(props) {
 			</div>
 		);
 	}
+	/******************************************************/
 
+	//Initializes the JSX in to be displayed for output on test run.
+	/**********************************************************************/
 	let output_content = null;
 
 	if (submitted && isWaiting) {
@@ -86,9 +117,10 @@ export default withRouter(function(props) {
 			</div>
 		);
 	}
+	/*********************************************************************/
 
-	const valueGetter = useRef();
-
+	//A dictionary of the currently set editor language vs the acceptable language code for test run using codechef API
+	/*********************************************************************/
 	const codechef_language_mapper = {
 		cpp: "C++17",
 		java: "JAVA",
@@ -96,8 +128,12 @@ export default withRouter(function(props) {
 		python: "PYTH 3.6",
 		c: "C"
 	};
+	/********************************************************************/
 
-	const saveCode = () => {
+	/**
+	 * Responsible for saving my code to the backend server database.
+	 */
+	const saveCode_api = () => {
 		const username = Cookie.load("user_name");
 		if (username && valueGetter.current() != default_code_to_show) {
 			const cur_code = valueGetter.current();
@@ -115,12 +151,30 @@ export default withRouter(function(props) {
 				})
 			})
 				.then(response => response.text())
-				.then(() => {})
+				.then(() => {
+					saveCode();
+				})
 				.catch(error => console.log("error", error));
 		}
 	};
 
-	const fetchPreviousCode = () => {
+	/**
+	 * Save the current code in a cookie.
+	 */
+	const saveCode = () => {
+		if (valueGetter.current() != default_code_to_show) {
+			Cookie.save("curCode", valueGetter.current(), {
+				path: "/",
+				maxAge: 6048000,
+				expires: 0
+			});
+		}
+	};
+
+	/**
+	 * Fetch the code from my backend server database.
+	 */
+	const fetchPreviousCode_api = () => {
 		const username = Cookie.load("user_name");
 		if (username) {
 			fetch(
@@ -140,8 +194,12 @@ export default withRouter(function(props) {
 					}
 				})
 				.then(result => {
-					// console.log(result.result.body);
 					if (result.result.body) {
+						Cookie.save("curCode", result.result.body, {
+							path: "/",
+							maxAge: 6048000,
+							expires: 0
+						});
 						setCurCode(result.result.body);
 					}
 				})
@@ -149,28 +207,51 @@ export default withRouter(function(props) {
 		}
 	};
 
-	const [show, setShow] = useState(false);
+	/**
+	 * Fetch the code from cookie
+	 */
+	const fetchPreviousCode = () => {
+		let prev_code = Cookie.load("curCode");
+		if (prev_code) {
+			setCurCode(prev_code);
+		}
+	};
 
+	//Event handlers for showing and closing the modal.
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
 
+	/**
+	 * Callback method which is used to save an instance of the editor, once it is mounted.
+	 *
+	 * @param {Object} _valueGetter An instance of the code editor
+	 */
 	function handleEditorDidMount(_valueGetter) {
 		setIsEditorReady(true);
 		valueGetter.current = _valueGetter;
 	}
 
+	/**
+	 * Event handler for changing the theme of the editor (light or dark)
+	 */
 	function handleThemeChange() {
 		setTheme(theme === "light" ? "dark" : "light");
 	}
 
+	/**
+	 * Event handler for changing the current language of the editor.
+	 *
+	 * @param {Object} event An event object which contains a reference to the element on which the event has occured.
+	 */
 	function changeLanguage(event) {
 		setLanguage(event.target.value);
 	}
 
+	/**
+	 * Event handler method; responsible for test running the current code based on the input(if any).
+	 */
 	function handleOnRun() {
-		// alert(valueGetter.current());
-		// console.log(valueGetter.current(), testInput);
-
+		//Set the current state of the output section
 		setIsWaiting(true);
 		setSubmitted(true);
 
@@ -196,57 +277,9 @@ export default withRouter(function(props) {
 			})
 			.then(
 				result => {
+					//A timeout is added to make sure that the submitted has finished running on the online judge and the output is generated.
 					setTimeout(() => {
-						fetch(
-							`https://api.codechef.com/ide/status?link=${result.result.data.link}`,
-							{
-								method: "GET",
-								headers: {
-									Accept: "application/json",
-									Authorization:
-										"Bearer " +
-										props.user_session.access_token
-								}
-							}
-						)
-							.then(res2 => {
-								if (res2.ok) {
-									return res2.json();
-								} else {
-									throw new Error(res2.status);
-								}
-							})
-							.then(
-								result2 => {
-									// console.log(result2);
-									let compile_info =
-										result2.result.data.cmpinfo;
-									let stderr_info =
-										result2.result.data.stderr;
-									let output = result2.result.data.output;
-
-									if (compile_info != "") {
-										setTestOutput(compile_info);
-									} else if (stderr_info != "") {
-										setTestOutput(stderr_info);
-									} else if (output != "") {
-										setTestOutput(output);
-									} else {
-										setTestOutput(
-											"Some error occured. Try again after sometime."
-										);
-									}
-
-									setIsWaiting(false);
-									setSubmitted(true);
-								},
-								error2 => {
-									console.log(error2.message);
-									if (error2.message == 401) {
-										props.refresh_token();
-									}
-								}
-							);
+						getOutputFromLink(result.result.data.link);
 					}, 6000);
 				},
 				error => {
@@ -258,6 +291,58 @@ export default withRouter(function(props) {
 			);
 	}
 
+	/**
+	 * Fetches the output result from the server.
+	 *
+	 * @param {string} link The link returned by codechef API which is used to fetch the output result.
+	 */
+	const getOutputFromLink = link => {
+		fetch(`https://api.codechef.com/ide/status?link=${link}`, {
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				Authorization: "Bearer " + props.user_session.access_token
+			}
+		})
+			.then(res => {
+				if (res.ok) {
+					return res.json();
+				} else {
+					throw new Error(res.status);
+				}
+			})
+			.then(
+				result => {
+					//Extract the test result data
+					let compile_info = result.result.data.cmpinfo;
+					let stderr_info = result.result.data.stderr;
+					let output = result.result.data.output;
+
+					if (compile_info != "") {
+						setTestOutput(compile_info);
+					} else if (stderr_info != "") {
+						setTestOutput(stderr_info);
+					} else if (output != "") {
+						setTestOutput(output);
+					} else {
+						setTestOutput(
+							"Some error occured. Try again after sometime."
+						);
+					}
+
+					setIsWaiting(false);
+					setSubmitted(true);
+				},
+				error2 => {
+					console.log(error2.message);
+					if (error2.message == 401) {
+						props.refresh_token();
+					}
+				}
+			);
+	};
+
+	//Return the JSX to be rendered
 	return (
 		<>
 			<div className="editor-container">
@@ -351,7 +436,7 @@ export default withRouter(function(props) {
 								<option value="python">Python 3.6</option>
 								<option value="c">C</option>
 							</select>
-							<div className="save-btn" onClick={saveCode}>
+							<div className="save-btn" onClick={saveCode_api}>
 								<i className="fas fa-save"></i>
 							</div>
 							{full_screen_icon}

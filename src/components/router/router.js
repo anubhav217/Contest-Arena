@@ -6,6 +6,11 @@ import Home from "../home/home";
 import ProblemDetails from "../problem_details/problem_details";
 import Error404 from "../error404/error404";
 
+/**
+ * Functional component which handles routes.
+ *
+ * @param {Object} props Arguments passed as attributes to the component
+ */
 const Router = props => (
 	<Switch>
 		<ProtectedRoute
@@ -41,12 +46,10 @@ const ProtectedRoute = ({
 	username: username,
 	...rest
 }) => {
-	// console.log(rest);
 	return (
 		<Route
 			{...rest}
 			render={props => {
-				// console.log(props);
 				return isAuthenticated ? (
 					<Component
 						{...props}

@@ -3,6 +3,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./error404.css";
 
+/**
+ * A stateless component displaying the 404 message
+ */
 export default function Error404() {
 	return (
 		<div>

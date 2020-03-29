@@ -5,7 +5,20 @@ import "./problems.css";
 import { Link } from "react-router-dom";
 import Submissions from "../submissions/submissions";
 
+/**
+ * Stateful component responsible for displaying the problem list on the contest page.
+ */
 export default class Problems extends Component {
+	/**
+	 * The first method to be called on instantiating the component. Responsible for initializing the various states of the component.
+	 * problems: The list of problems for the contest
+	 * problem_details: The details of every problem of the contest (name, submission info etc.)
+	 * isParent: Whether the contest has sub divisions(Div A, Div B)
+	 * children: If the contest has divisons, the children stores the contest codes of the sub contests.
+	 * curr_category: Tracks the currently selected sub category of a contest (if any).
+	 *
+	 * @param {Object} props Arguements that are passed as attributes to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -18,10 +31,18 @@ export default class Problems extends Component {
 		};
 	}
 
+	/**
+	 * Fetches the problem details of a selected subcontest.
+	 *
+	 * @param {string} contest_code The contest code whose problem details is to be fetched.
+	 */
 	onCategorySet = contest_code => {
+		//Set the current waiting state to true
 		this.setState({
 			isWaiting: true
 		});
+
+		//Flag to check if already got too many request error.
 		let too_many = false;
 		fetch("https://api.codechef.com/contests/" + contest_code, {
 			method: "GET",
@@ -39,10 +60,12 @@ export default class Problems extends Component {
 			})
 			.then(
 				result => {
-					// console.log(result.result.data.content.problemsList);
+					//Get the list of problem codes for the contest.
 					let problems = result.result.data.content.problemsList;
 					let fetches = [];
 					let problem_details = [];
+
+					//Loop through each problem and fetch the problem details, against every problem code.
 					problems.forEach(item => {
 						fetches.push(
 							fetch(
@@ -66,6 +89,7 @@ export default class Problems extends Component {
 								})
 								.then(
 									result => {
+										//Extract the required fields.
 										let obj = {};
 										obj["name"] =
 											result.result.data.content.problemName;
@@ -73,10 +97,11 @@ export default class Problems extends Component {
 											result.result.data.content.successfulSubmissions;
 										obj["problemCode"] = item.problemCode;
 										obj["contestCode"] = contest_code;
+
+										//Save info in the problem_details state.
 										problem_details.push(obj);
 									},
 									error => {
-										console.log(error.message);
 										if (error.message == 401) {
 											this.props.refresh_token();
 										}
@@ -98,6 +123,7 @@ export default class Problems extends Component {
 						);
 					});
 
+					//Execute all the fetch request in async manner.
 					return Promise.all(fetches).then(() => {
 						return {
 							problems: problems,
@@ -106,7 +132,6 @@ export default class Problems extends Component {
 					});
 				},
 				error => {
-					console.log(error.message);
 					if (error.message == 401) {
 						this.props.refresh_token();
 					}
@@ -147,12 +172,18 @@ export default class Problems extends Component {
 			});
 	};
 
+	/**
+	 * Fetches the Contest data on component update.
+	 *
+	 * @param {Object} prevProps Previous copy of props
+	 * @param {Object} prevState Previous copu of state
+	 * @param {Object} snapshot Previous value of snapshot
+	 */
 	componentDidUpdate(prevProps, prevState, snapshot) {
 		if (
 			prevProps.contest_code != this.props.contest_code &&
 			this.props.contest_code != ""
 		) {
-			// console.log(this.props.contest_code, " HERE");
 			this.setState({
 				isWaiting: true
 			});
@@ -177,7 +208,6 @@ export default class Problems extends Component {
 				})
 				.then(
 					result => {
-						// console.log(result);
 						const isParent = result.result.data.content.isParent;
 						const children = result.result.data.content.children;
 						let problems = [];
@@ -186,7 +216,6 @@ export default class Problems extends Component {
 						problems = result.result.data.content.problemsList;
 
 						problems.forEach((item, index) => {
-							// console.log(item);
 							fetches.push(
 								fetch(
 									`https://api.codechef.com/contests/${this.props.contest_code}/problems/${item.problemCode}`,
@@ -210,7 +239,6 @@ export default class Problems extends Component {
 									})
 									.then(
 										result => {
-											// console.log(result);
 											let obj = {};
 											obj["name"] =
 												result.result.data.content.problemName;
@@ -221,12 +249,9 @@ export default class Problems extends Component {
 											obj[
 												"contestCode"
 											] = this.props.contest_code;
-											// obj["body"] =
-											// 	result.result.data.content.body;
 											problem_details.push(obj);
 										},
 										error => {
-											console.log(error.message);
 											if (error.message == 401) {
 												this.props.refresh_token();
 											}
@@ -261,7 +286,6 @@ export default class Problems extends Component {
 						});
 					},
 					error => {
-						console.log(error.message);
 						if (error.message == 401) {
 							this.props.refresh_token();
 						}
@@ -292,7 +316,6 @@ export default class Problems extends Component {
 					}
 				)
 				.then(result => {
-					// console.log(result);
 					if (result) {
 						this.setState({
 							problems: result.problems,
@@ -312,8 +335,10 @@ export default class Problems extends Component {
 		}
 	}
 
+	/**
+	 * Render JSX
+	 */
 	render() {
-		// console.log(this.props.contest_code + " HERE");
 		let divisions = null;
 		if (this.state.isParent) {
 			divisions = (

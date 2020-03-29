@@ -2,10 +2,23 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 
 import MarkdownRenderer from "./markdown";
+
 import "./problem_statement.css";
 
+/**
+ * A stateful component responsible rendering the problem details like the title, author, time limit, body, etc.
+ */
 export default withRouter(
 	class ProblemStatement extends Component {
+		/**
+		 * The first method to be called on instantiating the component. Responsible for initializing the various states of the component
+		 * problem_info : Contains all the details of the problem
+		 * contest_code : The contest code for the problem
+		 * problem_code : The problem code for the problem
+		 * fullscreen : Keeps track whether the problem details section is in full screen mode or not.
+		 *
+		 * @param {Object} props Arguements that are passed as attributes to the component
+		 */
 		constructor(props) {
 			super(props);
 			this.problem_info = {};
@@ -17,7 +30,12 @@ export default withRouter(
 			// console.log("HERE!!!");
 		}
 
-		fetchProblemData = () => {
+		/**
+		 * Fetch the data from codechef api about the details of the problem using the problem code and contest code if they are set.
+		 *
+		 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
+		 */
+		fetchProblemData = firstTime => {
 			if (
 				this.state.contest_code != "" &&
 				this.state.problem_code != ""
@@ -42,16 +60,14 @@ export default withRouter(
 					})
 					.then(
 						result => {
-							// console.log(result.result.data.content);
 							this.problem_info = result.result.data.content;
 							this.props.setStatus("ok");
 						},
 						error => {
 							console.log(error.message);
-							if (error.message == 401) {
-								this.props.refresh_token(
-									this.props.location.pathname
-								);
+							if (error.message == 401 && firstTime) {
+								this.props.refresh_token();
+								this.fetchProblemData(!firstTime);
 							} else if (error.message == 404) {
 								this.setState({
 									contest_code: "",
@@ -65,10 +81,19 @@ export default withRouter(
 			}
 		};
 
+		/**
+		 * Called when component is successfully mounted; tries to fetch the problem details.
+		 */
 		componentDidMount() {
-			this.fetchProblemData();
+			this.fetchProblemData(true);
 		}
 
+		/**
+		 * Called when the component is updated. Used here to fetch the new problem data and set the correct fullscreen mode.
+		 *
+		 * @param {Object} prevProps Previous instance of the props passed
+		 * @param {Object} prevState Previous instance of the component state
+		 */
 		componentDidUpdate(prevProps, prevState) {
 			if (
 				this.props.contest_code != prevProps.contest_code ||
@@ -83,13 +108,20 @@ export default withRouter(
 			}
 		}
 
+		/**
+		 * Rendex the JSX.
+		 */
 		render() {
 			let str = this.problem_info.body;
+
+			//Sanitizing the problem body string for proper markdown.
 			if (str) {
 				str = str.replace(/`/g, "");
 				str = str.replace(/###/g, "");
 			}
-			// console.log(str);
+
+			//Set the correct fullscreen toggle icon
+			/****************************************************/
 			let full_screen_icon = (
 				<div
 					className="tab-f-icon-container"
@@ -109,6 +141,8 @@ export default withRouter(
 					</div>
 				);
 			}
+			/****************************************************/
+
 			return (
 				<div>
 					<div className="text-right">{full_screen_icon}</div>
