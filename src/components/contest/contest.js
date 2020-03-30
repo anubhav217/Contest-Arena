@@ -52,10 +52,10 @@ export default class Contest extends Component {
 	 * @param {Object} event The event object related to the DOM Element on which the event was triggered
 	 */
 	getResults = event => {
-		let q = event.target.value;
-		q = q.trim();
+		const q = event.target.value;
+		let trimmed_query = q.trim();
 		let suggestions = [];
-		if (q.length > 0) {
+		if (trimmed_query.length > 0) {
 			suggestions = this.contest_list.filter(item => {
 				let c1 = item.code.toLowerCase();
 				let c2 = item.name.toLowerCase();

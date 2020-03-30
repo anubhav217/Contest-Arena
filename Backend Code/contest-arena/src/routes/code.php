@@ -25,7 +25,6 @@ $app->add(function ($req, $res, $next) {
 });
 
 $app->post('/code', function (Request $request, Response $response, $args) {
-    // echo ("All righty!");
     
     $sql = "INSERT INTO code (problem_code, contest_code, user_id, code_content) VALUES (:pcode, :ccode, :userid, :code) ON DUPLICATE KEY UPDATE code_content = VALUES(code_content)";
 

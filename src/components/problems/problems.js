@@ -32,7 +32,7 @@ export default class Problems extends Component {
 	}
 
 	/**
-	 * Fetches the problem details of a selected subcontest.
+	 * Fetches the problem details of a selected subcontest from my backend server. Caching is implemented in my backend DB to minimize the number of api calls to codechef.
 	 *
 	 * @param {string} contest_code The contest code whose problem details is to be fetched.
 	 */
@@ -42,8 +42,10 @@ export default class Problems extends Component {
 			isWaiting: true
 		});
 
-		//Flag to check if already got too many request error.
+		//Flag to check if already got error message.
 		let too_many = false;
+		let error_shown = false;
+
 		fetch("https://api.codechef.com/contests/" + contest_code, {
 			method: "GET",
 			headers: {
@@ -69,14 +71,13 @@ export default class Problems extends Component {
 					problems.forEach(item => {
 						fetches.push(
 							fetch(
-								`https://api.codechef.com/contests/${contest_code}/problems/${item.problemCode}`,
+								`http://api.contest-arena/problem/${contest_code}/${item.problemCode}`,
 								{
 									method: "GET",
 									headers: {
 										Accept: "application/json",
-										Authorization:
-											"Bearer " +
-											this.props.user_session.access_token
+										Authorization: this.props.user_session
+											.access_token
 									}
 								}
 							)
@@ -89,17 +90,39 @@ export default class Problems extends Component {
 								})
 								.then(
 									result => {
-										//Extract the required fields.
-										let obj = {};
-										obj["name"] =
-											result.result.data.content.problemName;
-										obj["successful_submissions"] =
-											result.result.data.content.successfulSubmissions;
-										obj["problemCode"] = item.problemCode;
-										obj["contestCode"] = contest_code;
+										if (
+											result.result.status == "Ok" &&
+											result.result.body
+										) {
+											//Extract the required fields.
+											let obj = {};
+											obj["name"] =
+												result.result.body[0].problemName;
+											obj["successful_submissions"] =
+												result.result.body[0].successfulSubmissions;
+											obj["problemCode"] =
+												item.problemCode;
+											obj["contestCode"] = contest_code;
 
-										//Save info in the problem_details state.
-										problem_details.push(obj);
+											//Save info in the problem_details state.
+											problem_details.push(obj);
+										} else if (!error_shown) {
+											error_shown = true;
+											alert(
+												"Oops! Error " +
+													result.result.body +
+													" occured"
+											);
+											this.props.resetSearch();
+											this.setState({
+												problems: [],
+												problem_details: [],
+												isParent: false,
+												children: [],
+												curr_category: "",
+												isWaiting: false
+											});
+										}
 									},
 									error => {
 										if (error.message == 401) {
@@ -118,6 +141,16 @@ export default class Problems extends Component {
 												isWaiting: false
 											});
 										}
+
+										this.props.resetSearch();
+										this.setState({
+											problems: [],
+											problem_details: [],
+											isParent: false,
+											children: [],
+											curr_category: "",
+											isWaiting: false
+										});
 									}
 								)
 						);
@@ -184,10 +217,16 @@ export default class Problems extends Component {
 			prevProps.contest_code != this.props.contest_code &&
 			this.props.contest_code != ""
 		) {
+			//Set the component to show waiting state.
 			this.setState({
 				isWaiting: true
 			});
+
+			//Flag to check if error message already shown.
 			let too_many = false;
+			let error_show = false;
+
+			//Fetch the details of the contest selected.
 			fetch(
 				`https://api.codechef.com/contests/${this.props.contest_code}`,
 				{
@@ -215,18 +254,17 @@ export default class Problems extends Component {
 						let fetches = [];
 						problems = result.result.data.content.problemsList;
 
+						//If the contest selected does not have any sub contests, fetch the name and number of successful submissions of every problem.
 						problems.forEach((item, index) => {
 							fetches.push(
 								fetch(
-									`https://api.codechef.com/contests/${this.props.contest_code}/problems/${item.problemCode}`,
+									`http://api.contest-arena/problem/${this.props.contest_code}/${item.problemCode}`,
 									{
 										method: "GET",
 										headers: {
 											Accept: "application/json",
-											Authorization:
-												"Bearer " +
-												this.props.user_session
-													.access_token
+											Authorization: this.props
+												.user_session.access_token
 										}
 									}
 								)
@@ -239,28 +277,31 @@ export default class Problems extends Component {
 									})
 									.then(
 										result => {
-											let obj = {};
-											obj["name"] =
-												result.result.data.content.problemName;
-											obj["successful_submissions"] =
-												result.result.data.content.successfulSubmissions;
-											obj["problemCode"] =
-												item.problemCode;
-											obj[
-												"contestCode"
-											] = this.props.contest_code;
-											problem_details.push(obj);
-										},
-										error => {
-											if (error.message == 401) {
-												this.props.refresh_token();
-											}
 											if (
-												error.message == 429 &&
-												!too_many
+												result.result.status == "Ok" &&
+												result.result.body
 											) {
-												alert("Too many requests!");
-												too_many = !too_many;
+												//If result status is ok, extract and store data in the problem_details list.
+												let obj = {};
+												obj["name"] =
+													result.result.body[0].problemName;
+												obj["successful_submissions"] =
+													result.result.body[0].successfulSubmissions;
+												obj["problemCode"] =
+													item.problemCode;
+												obj[
+													"contestCode"
+												] = this.props.contest_code;
+
+												//Store details is problem_details list
+												problem_details.push(obj);
+											} else {
+												//If status is not okay, display an alert.
+												alert(
+													"Oops! Error " +
+														result.result.body +
+														" occured"
+												);
 												this.props.resetSearch();
 												this.setState({
 													problems: [],
@@ -271,11 +312,34 @@ export default class Problems extends Component {
 													isWaiting: false
 												});
 											}
+										},
+										error => {
+											//Display other relevant error messages and reset the state
+											if (error.message == 401) {
+												this.props.refresh_token();
+											}
+											if (
+												error.message == 429 &&
+												!too_many
+											) {
+												alert("Too many requests!");
+												too_many = !too_many;
+											}
+											this.props.resetSearch();
+											this.setState({
+												problems: [],
+												problem_details: [],
+												isParent: false,
+												children: [],
+												curr_category: "",
+												isWaiting: false
+											});
 										}
 									)
 							);
 						});
 
+						//Execute all the fetch requests in async manner.
 						return Promise.all(fetches).then(() => {
 							return {
 								problems: problems,
@@ -316,6 +380,7 @@ export default class Problems extends Component {
 					}
 				)
 				.then(result => {
+					//When everything is fetched properly, update the relevant component states.
 					if (result) {
 						this.setState({
 							problems: result.problems,

@@ -60,10 +60,12 @@ export default class Rankings extends Component {
 			.then(
 				result => {
 					this.rankings = result.result.data.content;
-					this.setState({
-						rankings: this.rankings.slice(0, 10),
-						is_waiting: false
-					});
+					if (this.rankings) {
+						this.setState({
+							rankings: this.rankings.slice(0, 10),
+							is_waiting: false
+						});
+					}
 				},
 				error => {
 					if (error.message == 401 && firstTime) {
