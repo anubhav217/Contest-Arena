@@ -43,6 +43,7 @@ export default withRouter(
 					user_name: ""
 				};
 			}
+			console.log(this.state.user_session);
 		}
 
 		/**
@@ -52,8 +53,6 @@ export default withRouter(
 		refresh_token = () => {
 			let user_session_data = Cookie.load("user_session");
 			if (user_session_data) {
-				console.log(user_session_data.refresh_token);
-
 				fetch("https://api.codechef.com/oauth/token", {
 					method: "POST",
 					headers: {
@@ -96,6 +95,8 @@ export default withRouter(
 									expires: new Date(Date.now() + 604800000)
 								}
 							);
+
+							this.getUserName(false);
 						},
 						error => {
 							console.log(error.message);
@@ -150,7 +151,7 @@ export default withRouter(
 		/**
 		 * Responsible for getting the username from the codechef API.
 		 */
-		getUserName = () => {
+		getUserName = firstTime => {
 			fetch("https://api.codechef.com/users/me", {
 				headers: {
 					Accept: "application/json",
@@ -177,9 +178,9 @@ export default withRouter(
 						});
 					},
 					error => {
-						console.log(error.message);
-						if (error.message == 401) {
+						if (error.message == 401 && firstTime) {
 							this.refresh_token();
+							this.getUserName(!firstTime);
 						}
 					}
 				);
@@ -190,7 +191,7 @@ export default withRouter(
 		 */
 		componentDidMount() {
 			if (this.state.user_session.isAuthenticated) {
-				this.getUserName();
+				this.getUserName(true);
 			}
 		}
 
@@ -206,7 +207,7 @@ export default withRouter(
 				this.state.user_session.isAuthenticated &&
 				!prevState.user_session.isAuthenticated
 			) {
-				this.getUserName();
+				this.getUserName(true);
 			}
 		}
 

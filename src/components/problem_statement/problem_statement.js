@@ -41,7 +41,7 @@ export default withRouter(
 				this.state.problem_code != ""
 			) {
 				fetch(
-					`https://api.codechef.com/contests/${this.state.contest_code}/problems/${this.state.problem_code}?fields=author,problemName,dateAdded,maxTimeLimit,body,tags`,
+					`https://api.codechef.com/contests/${this.state.contest_code}/problems/${this.state.problem_code}?fields=author,problemName,maxTimeLimit,body`,
 					{
 						method: "GET",
 						headers: {

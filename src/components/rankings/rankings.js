@@ -40,7 +40,7 @@ export default class Rankings extends Component {
 		let too_many = false;
 
 		fetch(
-			`https://api.codechef.com/rankings/${this.props.contestCode}?fields=rank,username,countryCode,country`,
+			`https://api.codechef.com/rankings/${this.props.contestCode}?fields=rank,username,countryCode,country,totalScore,institution`,
 			{
 				method: "GET",
 				headers: {
@@ -138,23 +138,20 @@ export default class Rankings extends Component {
 				<table className="table table-hover">
 					<thead className="thead-dark">
 						<tr>
-							<th scope="col">#</th>
 							<th scope="col">Rank</th>
 							<th scope="col">Username</th>
+							<th scope="col">Total Score</th>
 							<th scope="col">Country</th>
+							<th scope="col">Institution</th>
 						</tr>
 					</thead>
 					<tbody>
 						{this.state.rankings.map((item, index) => {
 							return (
 								<tr key={item.username}>
-									<th scope="row">
-										{(this.state.activePage - 1) * 10 +
-											index +
-											1}
-									</th>
-									<td>{item.rank}</td>
+									<td scope="row">{item.rank}</td>
 									<td>{item.username}</td>
+									<td>{item.totalScore}</td>
 									<td>
 										<ReactCountryFlag
 											countryCode={item.countryCode}
@@ -165,6 +162,7 @@ export default class Rankings extends Component {
 											cdnUrl="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.3/flags/1x1/"
 										/>
 									</td>
+									<td>{item.institution}</td>
 								</tr>
 							);
 						})}

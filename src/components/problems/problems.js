@@ -426,13 +426,13 @@ export default class Problems extends Component {
 		return (
 			<div className="container contest-container mt-5">
 				<div className="row">
-					<div className="col-md-7">
+					<div className="col-md-6">
 						<div className="problem-section">
 							{divisions}
 							{problems}
 						</div>
 					</div>
-					<div className="col-md-5">
+					<div className="col-md-6">
 						<Submissions
 							user_session={this.props.user_session}
 							contest_code={
