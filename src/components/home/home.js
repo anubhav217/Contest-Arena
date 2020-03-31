@@ -15,6 +15,10 @@ const Home = () => {
 	//Used to set the count
 	useEffect(() => {
 		setCount(1);
+
+		return () => {
+			setCount(0);
+		};
 	}, [count]);
 
 	//Set some time delay between animations
@@ -26,6 +30,7 @@ const Home = () => {
 
 	//JSX to be rendered
 	return (
+		//A fancy interactive image for the home page
 		<div className="particle-container row">
 			<div className="col-lg-6">
 				<Particles
@@ -99,7 +104,7 @@ const Home = () => {
 					{count ? (
 						<Typist avgTypingDelay={50} onTypingDone={stopDelay}>
 							<span>The biggest battleground of chefs</span>
-							<Typist.Backspace count={46} delay={800} />
+							<Typist.Backspace count={33} delay={800} />
 							<span> printf("Begin the fight!")</span>
 						</Typist>
 					) : (

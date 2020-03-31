@@ -34,7 +34,6 @@ export default withRouter(
 				this.state = {
 					user_session: {
 						isAuthenticated: false,
-						expires_in: 0,
 						access_token: 0,
 						refresh_token: 0,
 						update_time: 0
@@ -43,7 +42,6 @@ export default withRouter(
 					user_name: ""
 				};
 			}
-			console.log(this.state.user_session);
 		}
 
 		/**
@@ -77,7 +75,6 @@ export default withRouter(
 							this.setState({
 								user_session: {
 									isAuthenticated: true,
-									expires_in: result.result.data.expires_in,
 									access_token:
 										result.result.data.access_token,
 									refresh_token:
@@ -99,7 +96,6 @@ export default withRouter(
 							this.getUserName(false);
 						},
 						error => {
-							console.log(error.message);
 							this.logout();
 						}
 					);
@@ -113,20 +109,31 @@ export default withRouter(
 		 * @param {Object} response Contains the response object sent from Codechef containing the tokens.
 		 */
 		login = response => {
-			this.setState({
-				user_session: {
+			// Save the user's current session in a cookie.
+			Cookie.save(
+				"user_session",
+				{
 					isAuthenticated: true,
-					expires_in: response.result.data.expires_in,
-					access_token: response.result.data.access_token,
-					refresh_token: response.result.data.refresh_token,
+					access_token: response.access_token,
+					refresh_token: response.refresh_token,
 					update_time: Date.now()
+				},
+				{
+					path: "/",
+					maxAge: 6048000,
+					expires: new Date(Date.now() + 604800000)
 				}
-			});
-			Cookie.save("user_session", this.state.user_session, {
-				path: "/",
-				maxAge: 6048000,
-				expires: new Date(Date.now() + 604800000)
-			});
+			);
+
+			let user_session_data = Cookie.load("user_session");
+			if (user_session_data) {
+				this.setState({
+					user_session: user_session_data
+				});
+			}
+
+			//Redirect to the contest page, once the session is stored.
+			this.props.history.push("/contest");
 		};
 
 		/**
@@ -138,7 +145,6 @@ export default withRouter(
 			this.setState({
 				user_session: {
 					isAuthenticated: false,
-					expires_in: 0,
 					access_token: 0,
 					refresh_token: 0,
 					update_time: 0

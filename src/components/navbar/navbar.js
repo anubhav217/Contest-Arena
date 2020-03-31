@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 
-import CodechefLogin from "react-codechef-login";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { Link, withRouter } from "react-router-dom";
+import APILogin from "../api-login/api_login";
+import Cookie from "react-cookies";
 
 import "./style.css";
 
@@ -12,10 +13,15 @@ import "./style.css";
  * A stateful component containing the Navbar
  */
 class AppNavbar extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			logged_in: false
+		};
+	}
 	//Callback function when there's a successful OAuth login by codechef
 	responseCodechef = response => {
 		this.props.login(response);
-		this.props.history.push("/contest");
 	};
 
 	//Callback function on login failure
@@ -24,22 +30,40 @@ class AppNavbar extends Component {
 		this.props.history.push("/");
 	};
 
+	componentDidMount() {
+		// let user_session_data = Cookie.load("user_session");
+		// if (user_session_data && user_session_data.isAuthenticated) {
+		this.setState({
+			logged_in: this.props.isAuthenticated
+		});
+		// }
+		// else {
+		// 	this.setState({
+		// 		logged_in: false
+		// 	});
+		// }
+	}
+	componentDidUpdate(prevProps, prevState) {
+		if (prevProps.isAuthenticated != this.props.isAuthenticated) {
+			this.setState({
+				logged_in: this.props.isAuthenticated
+			});
+		}
+	}
+
 	//JSX to be rendered
 	render() {
+		let user_session_data = Cookie.load("user_session");
+
 		let navBarRightContent = (
-			<CodechefLogin
-				clientId="c05ec8e1ed3b1e305a62308a140bb50b"
-				clientSecret="8990a3aeae4b9746f3ec00ffc2930780"
-				redirectUri="http://localhost:3000" // http://localhost:3000 https://safe-wildwood-95576.herokuapp.com/
-				state="xyzabc"
+			<APILogin
 				className="loginbtn"
-				buttonText="Login With CodeChef"
 				onSuccess={this.responseCodechef}
 				onFailure={this.loginFailure}
 			/>
 		);
 
-		if (this.props.isAuthenticated) {
+		if (this.state.logged_in) {
 			navBarRightContent = (
 				<NavDropdown
 					title={"Hello, " + this.props.username}

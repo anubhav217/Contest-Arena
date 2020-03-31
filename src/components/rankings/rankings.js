@@ -39,17 +39,13 @@ export default class Rankings extends Component {
 
 		let too_many = false;
 
-		fetch(
-			`https://api.codechef.com/rankings/${this.props.contestCode}?fields=rank,username,countryCode,country,totalScore,institution`,
-			{
-				method: "GET",
-				headers: {
-					Accept: "application/json",
-					Authorization:
-						"Bearer " + this.props.user_session.access_token
-				}
+		fetch(`http://api.contest-arena/rankings/${this.props.contestCode}`, {
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				Authorization: this.props.user_session.access_token
 			}
-		)
+		})
 			.then(res => {
 				if (res.ok) {
 					return res.json();
@@ -59,11 +55,19 @@ export default class Rankings extends Component {
 			})
 			.then(
 				result => {
-					this.rankings = result.result.data.content;
-					if (this.rankings) {
+					if (result.result.status == "Ok") {
+						this.rankings = result.result.body;
+						if (this.rankings) {
+							this.setState({
+								rankings: this.rankings.slice(0, 10),
+								is_waiting: false
+							});
+						}
+					} else {
+						alert("Opps! Error " + result.result.body);
 						this.setState({
-							rankings: this.rankings.slice(0, 10),
-							is_waiting: false
+							rankings: [],
+							isWaiting: false
 						});
 					}
 				},

@@ -169,14 +169,15 @@ export default class Contest extends Component {
 	};
 
 	/**
-	 * Fetches the lists of contests from codechef API.
+	 * Fetches the lists of contests from codechef API. The data is cached in my backend server database, to ensure minimal calls to codechef API.
+	 *
 	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
 	 */
 	fetchContestListData = firstTime => {
 		let user_session_data = Cookie.load("user_session");
+		console.log(user_session_data);
+		console.log("HEREEEE");
 		if (user_session_data) {
-			console.log(firstTime);
-
 			fetch(
 				"https://api.codechef.com/contests?fields=code,name,startDate,endDate",
 				{
