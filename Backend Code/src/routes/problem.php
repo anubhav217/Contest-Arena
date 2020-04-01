@@ -2,28 +2,6 @@
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
-$app = new \Slim\App([
-
-    'settings' => [
-        'displayErrorDetails' => true,
-        'debug'               => true,
-        'whoops.editor'       => 'sublime',
-    ]
-
-]);
-
-$app->options('/{routes:.+}', function ($request, $response, $args) {
-    return $response;
-});
-
-$app->add(function ($req, $res, $next) {
-    $response = $next($req, $res);
-    return $response
-            ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-});
-
 function fetchProblemDataFromAPI($pcode, $ccode, $access_token)
 {
     $curl = curl_init();
@@ -57,7 +35,7 @@ function fetchProblemDataFromAPI($pcode, $ccode, $access_token)
         $error_msg = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     }
     curl_close($curl);
-    
+
     if (isset($error_msg)) {
         $msg["result"]["status"] = "Error";
         $msg["result"]["body"] = $error_msg;
@@ -70,7 +48,7 @@ function fetchProblemDataFromAPI($pcode, $ccode, $access_token)
     return $msg;
 }
 
-function getFromDB($pcode, $ccode)
+function getProblemDataFromDB($pcode, $ccode)
 {
     $sql = "SELECT maxTimeLimit, author, body, problemName, successfulSubmissions FROM problem_details WHERE problem_code = :pcode AND contest_code = :ccode";
 
@@ -103,15 +81,23 @@ function getFromDB($pcode, $ccode)
     return $msg;
 }
 
-function storeToDB($res, $pcode, $ccode)
+function storeProblemDataToDB($res, $pcode, $ccode)
 {
     $data = json_decode($res);
 
-    $maxTimeLimit = $data->result->data->content->maxTimeLimit;
-    $author = $data->result->data->content->author;
-    $body = $data->result->data->content->body;
-    $problemName = $data->result->data->content->problemName;
-    $successfulSubmissions = $data->result->data->content->successfulSubmissions;
+    if(isset($data->result->data->content))
+    {
+        $maxTimeLimit = $data->result->data->content->maxTimeLimit;
+        $author = $data->result->data->content->author;
+        $body = $data->result->data->content->body;
+        $problemName = $data->result->data->content->problemName;
+        $successfulSubmissions = $data->result->data->content->successfulSubmissions;
+    }
+    else
+    {
+        $msg['result'] = ['status'=>"Error", 'body'=>"404"];
+        return $msg;
+    }
 
     $sql = "INSERT INTO problem_details (problem_code, contest_code, maxTimeLimit, author, body, problemName, successfulSubmissions) VALUES (:pcode, :ccode, :maxTimeLimit, :author, :body, :problemName, :successfulSubmissions)";
 
@@ -135,10 +121,11 @@ function storeToDB($res, $pcode, $ccode)
             ':successfulSubmissions' => $successfulSubmissions
         ]);
 
-        $msg = getFromDB($pcode, $ccode);
+        $msg = getProblemDataFromDB($pcode, $ccode);
 
     } catch(PDOException $e){
-        $msg['result'] = ['status'=>"Error", 'Message'=>$e->getMessage()];
+        $msg['result'] = ['status'=>"Error", 'body'=>$e->getMessage()];
+        return $msg;
     }
 
     return $msg;
@@ -150,7 +137,7 @@ $app->get('/problem/{ccode}/{pcode}', function (Request $request, Response $resp
 
     $access_token = $request->getHeader('Authorization')[0];
 
-    $msg = getFromDB($pcode, $ccode);
+    $msg = getProblemDataFromDB($pcode, $ccode);
 
     if($msg["result"]["status"] == "Ok")
     {
@@ -158,7 +145,7 @@ $app->get('/problem/{ccode}/{pcode}', function (Request $request, Response $resp
         {
             $res = fetchProblemDataFromAPI($pcode, $ccode, $access_token);
             if($res["result"]["status"] == "Ok")
-                $msg = storeToDB($res["result"]["body"],$pcode,$ccode);
+                $msg = storeProblemDataToDB($res["result"]["body"],$pcode,$ccode);
             else
             {
                 $msg["result"]["status"] = "Error";
@@ -166,7 +153,6 @@ $app->get('/problem/{ccode}/{pcode}', function (Request $request, Response $resp
             }
         }
     }
-    
 
     return $response->getBody()->write(json_encode($msg));
 });

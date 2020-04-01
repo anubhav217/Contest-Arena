@@ -2,30 +2,8 @@
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
-$app = new \Slim\App([
-
-    'settings' => [
-        'displayErrorDetails' => true,
-        'debug'               => true,
-        'whoops.editor'       => 'sublime',
-    ]
-
-]);
-
-$app->options('/{routes:.+}', function ($request, $response, $args) {
-    return $response;
-});
-
-$app->add(function ($req, $res, $next) {
-    $response = $next($req, $res);
-    return $response
-            ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-});
-
 $app->post('/code', function (Request $request, Response $response, $args) {
-    
+
     $sql = "INSERT INTO code (problem_code, contest_code, user_id, code_content) VALUES (:pcode, :ccode, :userid, :code) ON DUPLICATE KEY UPDATE code_content = VALUES(code_content)";
 
     $pcode = $request->getParsedBodyParam('pcode', $default = null);

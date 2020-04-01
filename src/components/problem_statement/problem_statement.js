@@ -40,7 +40,7 @@ export default withRouter(
 				this.state.problem_code != ""
 			) {
 				fetch(
-					`https://13.232.146.140/problem/${this.state.contest_code}/${this.state.problem_code}`,
+					`http://api.contest-arena/problem/${this.state.contest_code}/${this.state.problem_code}`,
 					{
 						method: "GET",
 						headers: {

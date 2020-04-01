@@ -73,7 +73,7 @@ export default class Problems extends Component {
 					problems.forEach(item => {
 						fetches.push(
 							fetch(
-								`https://13.232.146.140/problem/${contest_code}/${item.problemCode}`,
+								`http://api.contest-arena/problem/${contest_code}/${item.problemCode}`,
 								{
 									method: "GET",
 									headers: {

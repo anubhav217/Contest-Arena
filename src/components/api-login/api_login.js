@@ -38,7 +38,7 @@ export default class APILogin extends Component {
 	render() {
 		return (
 			<div>
-				<a href="https://13.232.146.140/login" className="loginbtn">
+				<a href="http://api.contest-arena/login" className="loginbtn">
 					Login With CodeChef
 				</a>
 			</div>
