@@ -14,16 +14,24 @@ export default class Rankings extends Component {
 	 * rankings: The list of rankings data
 	 * isWaiting: Tracks if component is in waiting state or not
 	 * activePage: Tracks the current page number.
+	 * search_param: The type of query term for searching the ranklist.
+	 * search_query: The query term for searching the ranklist.
 	 *
 	 * @param {Object} props Arguements that are passed as attributes to the component
 	 */
 	constructor(props) {
 		super(props);
-		this.rankings = [];
+
+		this.rankings = []; //Stores the whole ranklist
+
+		this.rankings_to_be_shown = []; //Stores the ranklist items to be shown
+
 		this.state = {
 			rankings: [],
 			is_waiting: false,
-			activePage: 1
+			activePage: 1,
+			search_param: "",
+			search_query: ""
 		};
 	}
 
@@ -57,9 +65,13 @@ export default class Rankings extends Component {
 				result => {
 					if (result.result.status == "Ok") {
 						this.rankings = result.result.body;
-						if (this.rankings) {
+						this.rankings_to_be_shown = result.result.body;
+						if (this.rankings_to_be_shown) {
 							this.setState({
-								rankings: this.rankings.slice(0, 10),
+								rankings: this.rankings_to_be_shown.slice(
+									0,
+									10
+								),
 								is_waiting: false
 							});
 						}
@@ -97,15 +109,63 @@ export default class Rankings extends Component {
 
 	/**
 	 * Event handler for page number change
+	 *
+	 * @param {Integer} pageNumber The current page number
 	 */
 	handlePageChange = pageNumber => {
 		this.setState({
 			activePage: pageNumber,
-			rankings: this.rankings.slice(
+			rankings: this.rankings_to_be_shown.slice(
 				(pageNumber - 1) * 10,
 				(pageNumber - 1) * 10 + 10
 			)
 		});
+	};
+
+	/**
+	 * Set the current search parameter query
+	 *
+	 * @param {String} param The selected parameter
+	 */
+	handleSearchParamChange = param => {
+		this.setState({
+			search_param: param
+		});
+	};
+
+	/**
+	 * Event handler to set the current search query
+	 *
+	 * @param {Object} event The event object corresponding to the ranklist search bar
+	 */
+	handleSearch = event => {
+		//Check if a search parameter is selected. If not prompt an alert
+		if (this.state.search_param != "") {
+			const q = event.target.value;
+			let trimmed_query = q.trim();
+
+			let suggestions = this.rankings;
+			if (trimmed_query.length > 0) {
+				suggestions = this.rankings.filter(item => {
+					let c =
+						this.state.search_param == "Institution"
+							? item.institution.toLowerCase()
+							: item.username.toLowerCase();
+
+					let search_query = q.toLowerCase();
+					search_query = search_query.trim();
+
+					return c.indexOf(search_query) > -1;
+				});
+			}
+			this.rankings_to_be_shown = suggestions;
+			this.setState({
+				search_query: q,
+				rankings: this.rankings_to_be_shown.slice(0, 10)
+			});
+		} else {
+			alert("Please select a search parameter!");
+		}
 	};
 
 	/**
@@ -139,41 +199,106 @@ export default class Rankings extends Component {
 
 		if (this.state.is_waiting) {
 			ranklist = <img src={require("../../imgs/spi.svg")}></img>;
-		} else if (this.state.rankings.length > 0) {
+		} else if (this.rankings.length > 0) {
 			ranklist = (
-				<table className="table table-hover">
-					<thead className="thead-dark">
-						<tr>
-							<th scope="col">Rank</th>
-							<th scope="col">Username</th>
-							<th scope="col">Total Score</th>
-							<th scope="col">Country</th>
-							<th scope="col">Institution</th>
-						</tr>
-					</thead>
-					<tbody>
-						{this.state.rankings.map((item, index) => {
-							return (
-								<tr key={item.username}>
-									<td scope="row">{item.rank}</td>
-									<td>{item.username}</td>
-									<td>{item.totalScore}</td>
-									<td>
-										<ReactCountryFlag
-											countryCode={item.countryCode}
-											svg
-											cdnSuffix="svg"
-											aria-label={item.country}
-											title={item.country}
-											cdnUrl="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.3/flags/1x1/"
-										/>
-									</td>
-									<td>{item.institution}</td>
+				<>
+					<div className="container mb-5">
+						<div className="row">
+							<div className="col-md-4">
+								<div className="btn-group">
+									<button
+										type="button"
+										className="btn btn-info dropdown-toggle"
+										data-toggle="dropdown"
+										aria-haspopup="true"
+										aria-expanded="false"
+									>
+										{this.state.search_param == ""
+											? "Search Parameter"
+											: this.state.search_param}
+									</button>
+									<div className="dropdown-menu">
+										<button
+											className="dropdown-item"
+											href="#"
+											onClick={() =>
+												this.handleSearchParamChange(
+													"Institution"
+												)
+											}
+											style={{ cursor: "pointer" }}
+										>
+											Institution
+										</button>
+										<button
+											className="dropdown-item"
+											href="#"
+											onClick={() =>
+												this.handleSearchParamChange(
+													"Username"
+												)
+											}
+											style={{ cursor: "pointer" }}
+										>
+											Username
+										</button>
+									</div>
+								</div>
+							</div>
+							<div className="col-md-8">
+								<input
+									value={this.state.search_query}
+									onChange={event => {
+										this.handleSearch(event);
+									}}
+									className="form-control mx-auto ranklist-search"
+									placeholder="Search..."
+								></input>
+							</div>
+						</div>
+					</div>
+					{this.state.rankings.length > 0 ? (
+						<table className="table table-hover">
+							<thead className="thead-dark">
+								<tr>
+									<th scope="col">Rank</th>
+									<th scope="col">Username</th>
+									<th scope="col">Total Score</th>
+									<th scope="col">Country</th>
+									<th scope="col">Institution</th>
 								</tr>
-							);
-						})}
-					</tbody>
-				</table>
+							</thead>
+							<tbody>
+								{this.state.rankings.map((item, index) => {
+									return (
+										<tr key={item.username}>
+											<td scope="row">{item.rank}</td>
+											<td>{item.username}</td>
+											<td>{item.totalScore}</td>
+											<td>
+												<ReactCountryFlag
+													countryCode={
+														item.countryCode
+													}
+													svg
+													cdnSuffix="svg"
+													aria-label={item.country}
+													title={item.country}
+													cdnUrl="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.3/flags/1x1/"
+												/>
+											</td>
+											<td>{item.institution}</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
+					) : (
+						<div className="ranklist-title">
+							No ranklist item matching the criteria.
+						</div>
+					)}
+				</>
 			);
 		}
 
@@ -184,7 +309,7 @@ export default class Rankings extends Component {
 				<Pagination
 					activePage={this.state.activePage}
 					itemsCountPerPage={10}
-					totalItemsCount={this.rankings.length}
+					totalItemsCount={this.rankings_to_be_shown.length}
 					pageRangeDisplayed={5}
 					onChange={this.handlePageChange.bind(this)}
 					innerClass="pagination"

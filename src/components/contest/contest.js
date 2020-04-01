@@ -175,7 +175,6 @@ export default class Contest extends Component {
 	 */
 	fetchContestListData = firstTime => {
 		let user_session_data = Cookie.load("user_session");
-		console.log(user_session_data);
 		console.log("HEREEEE");
 		if (user_session_data) {
 			fetch(

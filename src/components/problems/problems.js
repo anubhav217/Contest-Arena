@@ -16,6 +16,7 @@ export default class Problems extends Component {
 	 * isParent: Whether the contest has sub divisions(Div A, Div B)
 	 * children: If the contest has divisons, the children stores the contest codes of the sub contests.
 	 * curr_category: Tracks the currently selected sub category of a contest (if any).
+	 * sort_by_submissions: Set the sorting order status of the problems.
 	 *
 	 * @param {Object} props Arguements that are passed as attributes to the component
 	 */
@@ -27,7 +28,8 @@ export default class Problems extends Component {
 			isParent: false,
 			children: [],
 			curr_category: "",
-			isWaiting: false
+			isWaiting: false,
+			sort_by_submissions: true //True => ascending order, False => descending order
 		};
 	}
 
@@ -194,9 +196,16 @@ export default class Problems extends Component {
 			)
 			.then(result => {
 				if (result) {
+					let problem_details = result.problem_details;
+					problem_details.sort((a, b) => {
+						return (
+							a.successful_submissions < b.successful_submissions
+						);
+					});
+
 					this.setState({
 						problems: result.problems,
-						problem_details: result.problem_details,
+						problem_details: problem_details,
 						curr_category: contest_code,
 						isWaiting: false
 					});
@@ -380,13 +389,25 @@ export default class Problems extends Component {
 					}
 				)
 				.then(result => {
+					let problem_details = [];
+					if (!result.isParent) {
+						problem_details = result.problem_details;
+						problem_details.sort((a, b) => {
+							return (
+								a.successful_submissions -
+								b.successful_submissions
+							);
+						});
+					}
+					console.log(problem_details);
+
 					//When everything is fetched properly, update the relevant component states.
 					if (result) {
 						this.setState({
 							problems: result.problems,
 							isParent: result.isParent,
 							children: result.children,
-							problem_details: result.problem_details,
+							problem_details: problem_details,
 							curr_category: "",
 							isWaiting: false
 						});
@@ -399,6 +420,33 @@ export default class Problems extends Component {
 				});
 		}
 	}
+
+	/**
+	 * Event handler for sorting the list of problems.
+	 */
+	handleSortOrderToggle = () => {
+		if (this.state.sort_by_submissions) {
+			let problem_details = this.state.problem_details;
+			problem_details.sort((a, b) => {
+				return b.successful_submissions - a.successful_submissions;
+			});
+
+			this.setState({
+				problem_details: problem_details,
+				sort_by_submissions: false
+			});
+		} else {
+			let problem_details = this.state.problem_details;
+			problem_details.sort((a, b) => {
+				return a.successful_submissions - b.successful_submissions;
+			});
+
+			this.setState({
+				problem_details: problem_details,
+				sort_by_submissions: true
+			});
+		}
+	};
 
 	/**
 	 * Render JSX
@@ -456,7 +504,14 @@ export default class Problems extends Component {
 							<tr>
 								<th scope="col">#</th>
 								<th scope="col">Name</th>
-								<th scope="col">Successful submissions</th>
+								<th
+									scope="col"
+									onClick={this.handleSortOrderToggle}
+									style={{ cursor: "pointer" }}
+								>
+									Successful submissions{" "}
+									<i className="fas fa-sort"></i>
+								</th>
 							</tr>
 						</thead>
 						<tbody>
