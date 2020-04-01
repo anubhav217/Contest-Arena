@@ -27,7 +27,7 @@ const Router = props => (
 			user_session={props.user_session}
 			logout={props.logout}
 			exact
-			path="/problems/:id/:contest_code"
+			path="/problems/:id/:contest_code/:virtual?"
 			component={ProblemDetails}
 			refresh_token={props.refresh_token}
 			username={props.username}

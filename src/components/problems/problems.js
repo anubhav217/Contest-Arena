@@ -3,6 +3,8 @@ import React, { Component } from "react";
 import "./problems.css";
 
 import { Link } from "react-router-dom";
+import Cookie from "react-cookies";
+
 import Submissions from "../submissions/submissions";
 
 /**
@@ -203,6 +205,20 @@ export default class Problems extends Component {
 						);
 					});
 
+					//Save data as cookie to reuse and reduce api calls.
+					Cookie.save(
+						"contest ",
+						{
+							contest_code: contest_code,
+							problem_details: problem_details
+						},
+						{
+							path: "/",
+							maxAge: 6048000,
+							expires: 0
+						}
+					);
+
 					this.setState({
 						problems: result.problems,
 						problem_details: problem_details,
@@ -398,6 +414,20 @@ export default class Problems extends Component {
 								b.successful_submissions
 							);
 						});
+
+						//Save data as cookie to reuse and reduce api calls.
+						Cookie.save(
+							"contest",
+							{
+								contest_code: this.props.contest_code,
+								problem_details: problem_details
+							},
+							{
+								path: "/",
+								maxAge: 6048000,
+								expires: 0
+							}
+						);
 					}
 
 					//When everything is fetched properly, update the relevant component states.

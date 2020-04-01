@@ -30,7 +30,7 @@ export default withRouter(
 		}
 
 		/**
-		 * Fetch the data from codechef api about the details of the problem using the problem code and contest code if they are set.
+		 * Fetch the data about the details of the problem using the problem code and contest code if they are set.
 		 *
 		 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
 		 */

@@ -6,6 +6,7 @@ import ProblemStatement from "../problem_statement/problem_statement";
 import Error404 from "../error404/error404";
 import Editor from "../editor/editor";
 import SuccessfulSubmissions from "../successful_submissions/successful_submissions";
+import ProblemList from "../problem-list/problem-list";
 
 import "./problem_details.css";
 
@@ -30,6 +31,7 @@ export default class ProblemDetails extends Component {
 			problem_code: this.props.match.params.id,
 			contest_code: this.props.match.params.contest_code,
 			status: "",
+			virtual: this.props.match.params.virtual,
 			p_fullscreen: false,
 			c_fullscreen: false
 		};
@@ -99,6 +101,17 @@ export default class ProblemDetails extends Component {
 						fullscreen={this.state.p_fullscreen}
 						toggleScreen={this.handlePFullscreen}
 					></SuccessfulSubmissions>
+				</Tab>
+				<Tab eventKey="contact" title="Other Problems">
+					<ProblemList
+						contest_code={this.state.contest_code}
+						problem_code={this.state.problem_code}
+						user_session={this.props.user_session}
+						logout={this.props.logout}
+						refresh_token={this.props.refresh_token}
+						virtual={this.state.virtual}
+						setStatus={code => this.setStatus(code)}
+					></ProblemList>
 				</Tab>
 			</Tabs>
 		);
