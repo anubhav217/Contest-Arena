@@ -38,7 +38,10 @@ export default class APILogin extends Component {
 	render() {
 		return (
 			<div>
-				<a href="http://api.contest-arena/login" className="loginbtn">
+				<a
+					href={`${process.env.REACT_APP_SECRET_NAME}/login`}
+					className="loginbtn"
+				>
 					Login With CodeChef
 				</a>
 			</div>

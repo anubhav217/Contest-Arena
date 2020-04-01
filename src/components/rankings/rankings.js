@@ -47,13 +47,16 @@ export default class Rankings extends Component {
 
 		let too_many = false;
 
-		fetch(`http://api.contest-arena/rankings/${this.props.contestCode}`, {
-			method: "GET",
-			headers: {
-				Accept: "application/json",
-				Authorization: this.props.user_session.access_token
+		fetch(
+			`${process.env.REACT_APP_SECRET_NAME}/rankings/${this.props.contestCode}`,
+			{
+				method: "GET",
+				headers: {
+					Accept: "application/json",
+					Authorization: this.props.user_session.access_token
+				}
 			}
-		})
+		)
 			.then(res => {
 				if (res.ok) {
 					return res.json();

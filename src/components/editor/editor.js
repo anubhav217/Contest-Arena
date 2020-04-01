@@ -138,7 +138,7 @@ export default withRouter(function(props) {
 		if (username && valueGetter.current() != default_code_to_show) {
 			const cur_code = valueGetter.current();
 
-			fetch("http://api.contest-arena/code", {
+			fetch(`${process.env.REACT_APP_SECRET_NAME}/code`, {
 				method: "POST",
 				headers: {
 					"content-Type": "application/json"
@@ -193,7 +193,7 @@ export default withRouter(function(props) {
 				setCurCode(cur_code);
 			} else {
 				fetch(
-					`http://api.contest-arena/code/${props.contest_code}/${props.problem_code}/${username}`,
+					`${process.env.REACT_APP_SECRET_NAME}/code/${props.contest_code}/${props.problem_code}/${username}`,
 					{
 						method: "GET",
 						headers: {

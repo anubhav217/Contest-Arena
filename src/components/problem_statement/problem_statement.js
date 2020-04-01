@@ -40,7 +40,7 @@ export default withRouter(
 				this.state.problem_code != ""
 			) {
 				fetch(
-					`http://api.contest-arena/problem/${this.state.contest_code}/${this.state.problem_code}`,
+					`${process.env.REACT_APP_SECRET_NAME}/problem/${this.state.contest_code}/${this.state.problem_code}`,
 					{
 						method: "GET",
 						headers: {
