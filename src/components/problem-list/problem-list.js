@@ -4,6 +4,13 @@ import Cookie from "react-cookies";
 import "./problem-list.css";
 
 export default class ProblemList extends Component {
+	/**
+	 * The method called first when a component is instantiated.
+	 * contest_code: contest code of the selected contest
+	 * problem_code: problem code of the currently viewing problem
+	 *
+	 * @param {Object} props Arguments passed as attributes to the component
+	 */
 	constructor(props) {
 		super(props);
 		this.problem_info = {};
