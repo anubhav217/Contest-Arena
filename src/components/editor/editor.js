@@ -35,7 +35,7 @@ export default withRouter(function(props) {
 	const [show, setShow] = useState(false);
 
 	//Set the default code to show in the editor
-	const default_code_to_show = `//Code your heart out here!`;
+	const default_code_to_show = "//Code your heart out here!";
 
 	//Stores an instance of the Editor, for utility reasons like, getting the code written etc.
 	const valueGetter = useRef();
@@ -49,7 +49,7 @@ export default withRouter(function(props) {
 
 		return () => {
 			//called when component unmounts
-			saveCode_api();
+			saveCode();
 		};
 	}, []);
 
@@ -162,48 +162,68 @@ export default withRouter(function(props) {
 	 * Save the current code in a cookie.
 	 */
 	const saveCode = () => {
+		const username = Cookie.load("user_name");
 		if (valueGetter.current() != default_code_to_show) {
-			Cookie.save("curCode", valueGetter.current(), {
-				path: "/",
-				maxAge: 6048000,
-				expires: 0
-			});
+			Cookie.save(
+				username + " " + props.problem_code,
+				valueGetter.current(),
+				{
+					path: "/",
+					maxAge: 6048000,
+					expires: 0
+				}
+			);
 		}
 	};
 
 	/**
-	 * Fetch the code from my backend server database.
+	 * Fetch the code from my backend server database if it's not available in a cookie.
 	 */
 	const fetchPreviousCode_api = () => {
 		const username = Cookie.load("user_name");
 		if (username) {
-			fetch(
-				`http://api.contest-arena/code/${props.contest_code}/${props.problem_code}/${username}`,
-				{
-					method: "GET",
-					headers: {
-						Accept: "application/json"
+			//First check if the cookie for the current user and problem code is already available
+			const cur_code = Cookie.load(username + " " + props.problem_code);
+
+			if (
+				cur_code &&
+				cur_code != "" &&
+				cur_code.trim() != default_code_to_show
+			) {
+				setCurCode(cur_code);
+			} else {
+				fetch(
+					`http://api.contest-arena/code/${props.contest_code}/${props.problem_code}/${username}`,
+					{
+						method: "GET",
+						headers: {
+							Accept: "application/json"
+						}
 					}
-				}
-			)
-				.then(res => {
-					if (res.ok) {
-						return res.json();
-					} else {
-						throw new Error(res.status);
-					}
-				})
-				.then(result => {
-					if (result.result.body) {
-						Cookie.save("curCode", result.result.body, {
-							path: "/",
-							maxAge: 6048000,
-							expires: 0
-						});
-						setCurCode(result.result.body);
-					}
-				})
-				.catch(error => console.log("error", error));
+				)
+					.then(res => {
+						if (res.ok) {
+							return res.json();
+						} else {
+							throw new Error(res.status);
+						}
+					})
+					.then(result => {
+						if (result.result.body) {
+							Cookie.save(
+								username + " " + props.problem_code,
+								result.result.body,
+								{
+									path: "/",
+									maxAge: 6048000,
+									expires: 0
+								}
+							);
+							setCurCode(result.result.body);
+						}
+					})
+					.catch(error => console.log("error", error));
+			}
 		}
 	};
 
@@ -211,7 +231,8 @@ export default withRouter(function(props) {
 	 * Fetch the code from cookie
 	 */
 	const fetchPreviousCode = () => {
-		let prev_code = Cookie.load("curCode");
+		const username = Cookie.load("user_name");
+		const prev_code = Cookie.load(username + " " + props.problem_code);
 		if (prev_code) {
 			setCurCode(prev_code);
 		}
@@ -280,7 +301,7 @@ export default withRouter(function(props) {
 					//A timeout is added to make sure that the submitted has finished running on the online judge and the output is generated.
 					setTimeout(() => {
 						getOutputFromLink(result.result.data.link);
-					}, 6000);
+					}, 20000);
 				},
 				error => {
 					console.log(error.message);

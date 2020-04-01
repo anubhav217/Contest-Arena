@@ -57,7 +57,6 @@ export default class SuccessfulSubmissions extends Component {
 					});
 				},
 				error => {
-					console.log(error.message);
 					if (error.message == 401 && firstTime) {
 						this.props.refresh_token();
 						this.fetchData(!firstTime);
@@ -86,7 +85,7 @@ export default class SuccessfulSubmissions extends Component {
 				</div>
 			);
 		} else {
-			if (this.state.submissions.length > 0) {
+			if (this.state.submissions && this.state.submissions.length > 0) {
 				contents = (
 					<div className="succ-sub-container custom-scroll">
 						<table className="table table-striped">

@@ -175,7 +175,8 @@ export default class Contest extends Component {
 	 */
 	fetchContestListData = firstTime => {
 		let user_session_data = Cookie.load("user_session");
-		console.log("HEREEEE");
+		console.log(user_session_data);
+
 		if (user_session_data) {
 			fetch(
 				"https://api.codechef.com/contests?fields=code,name,startDate,endDate",

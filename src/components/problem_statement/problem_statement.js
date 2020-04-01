@@ -27,7 +27,6 @@ export default withRouter(
 				problem_code: this.props.problem_code,
 				fullscreen: this.props.fullscreen
 			};
-			// console.log("HERE!!!");
 		}
 
 		/**
@@ -41,13 +40,12 @@ export default withRouter(
 				this.state.problem_code != ""
 			) {
 				fetch(
-					`https://api.codechef.com/contests/${this.state.contest_code}/problems/${this.state.problem_code}?fields=author,problemName,maxTimeLimit,body`,
+					`http://13.232.146.140/problem/${this.state.contest_code}/${this.state.problem_code}`,
 					{
 						method: "GET",
 						headers: {
 							Accept: "application/json",
-							Authorization:
-								"Bearer " + this.props.user_session.access_token
+							Authorization: this.props.user_session.access_token
 						}
 					}
 				)
@@ -60,11 +58,28 @@ export default withRouter(
 					})
 					.then(
 						result => {
-							this.problem_info = result.result.data.content;
-							this.props.setStatus("ok");
+							if (
+								result.result.status == "Ok" &&
+								result.result.body
+							) {
+								//If result status is ok, extract and store data in the problem_details list.
+								this.problem_info = result.result.body[0];
+								this.props.setStatus("ok");
+							} else {
+								//If status is not okay
+
+								if (result.result.body == 401 && firstTime) {
+									this.props.refresh_token();
+									this.fetchProblemData(!firstTime);
+								}
+								this.setState({
+									contest_code: "",
+									problem_code: ""
+								});
+								this.props.setStatus("404");
+							}
 						},
 						error => {
-							console.log(error.message);
 							if (error.message == 401 && firstTime) {
 								this.props.refresh_token();
 								this.fetchProblemData(!firstTime);
