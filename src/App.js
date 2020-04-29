@@ -28,7 +28,7 @@ export default withRouter(
 			if (user_session_data) {
 				this.state = {
 					user_session: user_session_data,
-					user_name: ""
+					user_name: "",
 				};
 			} else {
 				this.state = {
@@ -36,10 +36,10 @@ export default withRouter(
 						isAuthenticated: false,
 						access_token: 0,
 						refresh_token: 0,
-						update_time: 0
+						update_time: 0,
 					},
 
-					user_name: ""
+					user_name: "",
 				};
 			}
 		}
@@ -54,16 +54,16 @@ export default withRouter(
 				fetch("https://api.codechef.com/oauth/token", {
 					method: "POST",
 					headers: {
-						"content-Type": "application/json"
+						"content-Type": "application/json",
 					},
 					body: JSON.stringify({
 						grant_type: "refresh_token",
 						refresh_token: user_session_data.refresh_token,
 						client_id: "c05ec8e1ed3b1e305a62308a140bb50b",
-						client_secret: "8990a3aeae4b9746f3ec00ffc2930780"
-					})
+						client_secret: "8990a3aeae4b9746f3ec00ffc2930780",
+					}),
 				})
-					.then(res => {
+					.then((res) => {
 						if (res.ok) {
 							return res.json();
 						} else {
@@ -71,7 +71,7 @@ export default withRouter(
 						}
 					})
 					.then(
-						result => {
+						(result) => {
 							this.setState({
 								user_session: {
 									isAuthenticated: true,
@@ -79,8 +79,8 @@ export default withRouter(
 										result.result.data.access_token,
 									refresh_token:
 										result.result.data.refresh_token,
-									update_time: Date.now()
-								}
+									update_time: Date.now(),
+								},
 							});
 
 							Cookie.save(
@@ -89,13 +89,13 @@ export default withRouter(
 								{
 									path: "/",
 									maxAge: 604800,
-									expires: new Date(Date.now() + 604800000)
+									expires: new Date(Date.now() + 604800000),
 								}
 							);
 
 							this.getUserName(false);
 						},
-						error => {
+						(error) => {
 							this.logout();
 						}
 					);
@@ -108,7 +108,7 @@ export default withRouter(
 		 *
 		 * @param {Object} response Contains the response object sent from Codechef containing the tokens.
 		 */
-		login = response => {
+		login = (response) => {
 			// Save the user's current session in a cookie.
 			Cookie.save(
 				"user_session",
@@ -116,19 +116,20 @@ export default withRouter(
 					isAuthenticated: true,
 					access_token: response.access_token,
 					refresh_token: response.refresh_token,
-					update_time: Date.now()
+					auth_code: response.auth_code,
+					update_time: Date.now(),
 				},
 				{
 					path: "/",
 					maxAge: 6048000,
-					expires: new Date(Date.now() + 604800000)
+					expires: new Date(Date.now() + 604800000),
 				}
 			);
 
 			let user_session_data = Cookie.load("user_session");
 			if (user_session_data) {
 				this.setState({
-					user_session: user_session_data
+					user_session: user_session_data,
 				});
 			}
 
@@ -147,25 +148,25 @@ export default withRouter(
 					isAuthenticated: false,
 					access_token: 0,
 					refresh_token: 0,
-					update_time: 0
+					update_time: 0,
 				},
 
-				user_name: ""
+				user_name: "",
 			});
 		};
 
 		/**
 		 * Responsible for getting the username from the codechef API.
 		 */
-		getUserName = firstTime => {
+		getUserName = (firstTime) => {
 			fetch("https://api.codechef.com/users/me", {
 				headers: {
 					Accept: "application/json",
 					Authorization:
-						"Bearer " + this.state.user_session.access_token
-				}
+						"Bearer " + this.state.user_session.access_token,
+				},
 			})
-				.then(res => {
+				.then((res) => {
 					if (res.ok) {
 						return res.json();
 					} else {
@@ -173,17 +174,17 @@ export default withRouter(
 					}
 				})
 				.then(
-					result => {
+					(result) => {
 						this.setState({
-							user_name: result.result.data.content.username
+							user_name: result.result.data.content.username,
 						});
 						Cookie.save("user_name", this.state.user_name, {
 							path: "/",
 							maxAge: 6048000,
-							expires: new Date(Date.now() + 604800000)
+							expires: new Date(Date.now() + 604800000),
 						});
 					},
-					error => {
+					(error) => {
 						if (error.message == 401 && firstTime) {
 							this.refresh_token();
 							this.getUserName(!firstTime);

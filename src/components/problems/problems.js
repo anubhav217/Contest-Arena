@@ -24,6 +24,8 @@ export default class Problems extends Component {
 	 */
 	constructor(props) {
 		super(props);
+		let user_session_data = Cookie.load("user_session");
+		this.auth_code = user_session_data.auth_code;
 		this.state = {
 			problems: [],
 			problem_details: [],
@@ -31,7 +33,7 @@ export default class Problems extends Component {
 			children: [],
 			curr_category: "",
 			isWaiting: false,
-			sort_by_submissions: true //True => ascending order, False => descending order
+			sort_by_submissions: true, //True => ascending order, False => descending order
 		};
 	}
 
@@ -40,10 +42,10 @@ export default class Problems extends Component {
 	 *
 	 * @param {string} contest_code The contest code whose problem details is to be fetched.
 	 */
-	onCategorySet = contest_code => {
+	onCategorySet = (contest_code) => {
 		//Set the current waiting state to true
 		this.setState({
-			isWaiting: true
+			isWaiting: true,
 		});
 
 		//Flag to check if already got error message.
@@ -54,10 +56,10 @@ export default class Problems extends Component {
 			method: "GET",
 			headers: {
 				Accept: "application/json",
-				Authorization: "Bearer " + this.props.user_session.access_token
-			}
+				Authorization: "Bearer " + this.props.user_session.access_token,
+			},
 		})
-			.then(res => {
+			.then((res) => {
 				if (res.ok) {
 					return res.json();
 				} else {
@@ -65,14 +67,14 @@ export default class Problems extends Component {
 				}
 			})
 			.then(
-				result => {
+				(result) => {
 					//Get the list of problem codes for the contest.
 					let problems = result.result.data.content.problemsList;
 					let fetches = [];
 					let problem_details = [];
 
 					//Loop through each problem and fetch the problem details, against every problem code.
-					problems.forEach(item => {
+					problems.forEach((item) => {
 						fetches.push(
 							fetch(
 								`${process.env.REACT_APP_SECRET_NAME}/problem/${contest_code}/${item.problemCode}`,
@@ -80,12 +82,11 @@ export default class Problems extends Component {
 									method: "GET",
 									headers: {
 										Accept: "application/json",
-										Authorization: this.props.user_session
-											.access_token
-									}
+										authcode: this.auth_code,
+									},
 								}
 							)
-								.then(res => {
+								.then((res) => {
 									if (res.ok) {
 										return res.json();
 									} else {
@@ -93,7 +94,7 @@ export default class Problems extends Component {
 									}
 								})
 								.then(
-									result => {
+									(result) => {
 										if (
 											result.result.status == "Ok" &&
 											result.result.body
@@ -124,11 +125,11 @@ export default class Problems extends Component {
 												isParent: false,
 												children: [],
 												curr_category: "",
-												isWaiting: false
+												isWaiting: false,
 											});
 										}
 									},
-									error => {
+									(error) => {
 										if (error.message == 401) {
 											this.props.refresh_token();
 										}
@@ -142,7 +143,7 @@ export default class Problems extends Component {
 												isParent: false,
 												children: [],
 												curr_category: "",
-												isWaiting: false
+												isWaiting: false,
 											});
 										}
 
@@ -153,7 +154,7 @@ export default class Problems extends Component {
 											isParent: false,
 											children: [],
 											curr_category: "",
-											isWaiting: false
+											isWaiting: false,
 										});
 									}
 								)
@@ -164,11 +165,11 @@ export default class Problems extends Component {
 					return Promise.all(fetches).then(() => {
 						return {
 							problems: problems,
-							problem_details: problem_details
+							problem_details: problem_details,
 						};
 					});
 				},
-				error => {
+				(error) => {
 					if (error.message == 401) {
 						this.props.refresh_token();
 					}
@@ -182,7 +183,7 @@ export default class Problems extends Component {
 							isParent: false,
 							children: [],
 							curr_category: "",
-							isWaiting: false
+							isWaiting: false,
 						});
 					}
 					if (error.message == 404) {
@@ -191,12 +192,12 @@ export default class Problems extends Component {
 							problems: [],
 							problem_details: [],
 							curr_category: contest_code,
-							isWaiting: false
+							isWaiting: false,
 						});
 					}
 				}
 			)
-			.then(result => {
+			.then((result) => {
 				if (result) {
 					let problem_details = result.problem_details;
 					problem_details.sort((a, b) => {
@@ -210,12 +211,12 @@ export default class Problems extends Component {
 						"contest ",
 						{
 							contest_code: contest_code,
-							problem_details: problem_details
+							problem_details: problem_details,
 						},
 						{
 							path: "/",
 							maxAge: 6048000,
-							expires: 0
+							expires: 0,
 						}
 					);
 
@@ -223,7 +224,7 @@ export default class Problems extends Component {
 						problems: result.problems,
 						problem_details: problem_details,
 						curr_category: contest_code,
-						isWaiting: false
+						isWaiting: false,
 					});
 					this.props.setRankListCode(contest_code);
 				}
@@ -244,7 +245,7 @@ export default class Problems extends Component {
 		) {
 			//Set the component to show waiting state.
 			this.setState({
-				isWaiting: true
+				isWaiting: true,
 			});
 
 			//Flag to check if error message already shown.
@@ -259,11 +260,11 @@ export default class Problems extends Component {
 					headers: {
 						Accept: "application/json",
 						Authorization:
-							"Bearer " + this.props.user_session.access_token
-					}
+							"Bearer " + this.props.user_session.access_token,
+					},
 				}
 			)
-				.then(res => {
+				.then((res) => {
 					if (res.ok) {
 						return res.json();
 					} else {
@@ -271,7 +272,7 @@ export default class Problems extends Component {
 					}
 				})
 				.then(
-					result => {
+					(result) => {
 						const isParent = result.result.data.content.isParent;
 						const children = result.result.data.content.children;
 						let problems = [];
@@ -288,12 +289,11 @@ export default class Problems extends Component {
 										method: "GET",
 										headers: {
 											Accept: "application/json",
-											Authorization: this.props
-												.user_session.access_token
-										}
+											authcode: this.auth_code,
+										},
 									}
 								)
-									.then(res => {
+									.then((res) => {
 										if (res.ok) {
 											return res.json();
 										} else {
@@ -301,7 +301,7 @@ export default class Problems extends Component {
 										}
 									})
 									.then(
-										result => {
+										(result) => {
 											if (
 												result.result.status == "Ok" &&
 												result.result.body
@@ -334,11 +334,11 @@ export default class Problems extends Component {
 													isParent: false,
 													children: [],
 													curr_category: "",
-													isWaiting: false
+													isWaiting: false,
 												});
 											}
 										},
-										error => {
+										(error) => {
 											//Display other relevant error messages and reset the state
 											if (error.message == 401) {
 												this.props.refresh_token();
@@ -357,7 +357,7 @@ export default class Problems extends Component {
 												isParent: false,
 												children: [],
 												curr_category: "",
-												isWaiting: false
+												isWaiting: false,
 											});
 										}
 									)
@@ -370,11 +370,11 @@ export default class Problems extends Component {
 								problems: problems,
 								isParent: isParent,
 								children: children,
-								problem_details: problem_details
+								problem_details: problem_details,
 							};
 						});
 					},
-					error => {
+					(error) => {
 						if (error.message == 401) {
 							this.props.refresh_token();
 						}
@@ -388,7 +388,7 @@ export default class Problems extends Component {
 								isParent: false,
 								children: [],
 								curr_category: "",
-								isWaiting: false
+								isWaiting: false,
 							});
 						}
 						if (error.message == 404) {
@@ -399,12 +399,12 @@ export default class Problems extends Component {
 								children: [],
 								problem_details: [],
 								curr_category: "",
-								isWaiting: false
+								isWaiting: false,
 							});
 						}
 					}
 				)
-				.then(result => {
+				.then((result) => {
 					let problem_details = [];
 					if (!result.isParent) {
 						problem_details = result.problem_details;
@@ -420,12 +420,12 @@ export default class Problems extends Component {
 							"contest",
 							{
 								contest_code: this.props.contest_code,
-								problem_details: problem_details
+								problem_details: problem_details,
 							},
 							{
 								path: "/",
 								maxAge: 6048000,
-								expires: 0
+								expires: 0,
 							}
 						);
 					}
@@ -438,7 +438,7 @@ export default class Problems extends Component {
 							children: result.children,
 							problem_details: problem_details,
 							curr_category: "",
-							isWaiting: false
+							isWaiting: false,
 						});
 						if (!this.state.isParent) {
 							this.props.setRankListCode(this.props.contest_code);
@@ -462,7 +462,7 @@ export default class Problems extends Component {
 
 			this.setState({
 				problem_details: problem_details,
-				sort_by_submissions: false
+				sort_by_submissions: false,
 			});
 		} else {
 			let problem_details = this.state.problem_details;
@@ -472,7 +472,7 @@ export default class Problems extends Component {
 
 			this.setState({
 				problem_details: problem_details,
-				sort_by_submissions: true
+				sort_by_submissions: true,
 			});
 		}
 	};
@@ -498,7 +498,7 @@ export default class Problems extends Component {
 								: this.state.curr_category}
 						</button>
 						<div className="dropdown-menu">
-							{this.state.children.map(item => (
+							{this.state.children.map((item) => (
 								<button
 									className="dropdown-item"
 									href="#"

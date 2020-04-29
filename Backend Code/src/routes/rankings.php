@@ -133,21 +133,32 @@ function storeRankingsDataToDB($res, $ccode)
 $app->get('/rankings/{ccode}', function (Request $request, Response $response, $args){
     $ccode = $args['ccode'];
 
-    $access_token = $request->getHeader('Authorization')[0];
+    $auth_code = $request->getHeader('authcode')[0];
+    $access_token = check_session($auth_code);
 
-    $msg = getRankingsDataFromDB($ccode);
-
-    if($msg["result"]["status"] == "Ok")
+    if($access_token == 0)
     {
-        if(count($msg["result"]["body"]) == 0)
+        $msg["result"]["status"] = "Error";
+        $msg["result"]["body"] = "Unauthorized";
+        $response->getBody()->write(json_encode($msg));
+        return $response->withStatus(401);
+    }
+    else
+    {
+        $msg = getRankingsDataFromDB($ccode);
+
+        if($msg["result"]["status"] == "Ok")
         {
-            $res = fetchRankingsDataFromAPI($ccode, $access_token);
-            if($res["result"]["status"] == "Ok")
-                $msg = storeRankingsDataToDB($res["result"]["body"],$ccode);
-            else
+            if(count($msg["result"]["body"]) == 0)
             {
-                $msg["result"]["status"] = "Error";
-                $msg["result"]["body"] = $res["result"]["body"];
+                $res = fetchRankingsDataFromAPI($ccode, $access_token);
+                if($res["result"]["status"] == "Ok")
+                    $msg = storeRankingsDataToDB($res["result"]["body"],$ccode);
+                else
+                {
+                    $msg["result"]["status"] = "Error";
+                    $msg["result"]["body"] = $res["result"]["body"];
+                }
             }
         }
     }

@@ -4,6 +4,17 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 $app->post('/code', function (Request $request, Response $response, $args) {
 
+    $auth_code = $request->getHeader('authcode')[0];
+    $access_token = check_session($auth_code);
+
+    if($access_token == 0)
+    {
+        $msg["result"]["status"] = "Error";
+        $msg["result"]["body"] = "Unauthorized";
+        $response->getBody()->write(json_encode($msg));
+        return $response->withStatus(401);
+    }
+
     $sql = "INSERT INTO code (problem_code, contest_code, user_id, code_content) VALUES (:pcode, :ccode, :userid, :code) ON DUPLICATE KEY UPDATE code_content = VALUES(code_content)";
 
     $pcode = $request->getParsedBodyParam('pcode', $default = null);
@@ -41,6 +52,17 @@ $app->get('/code/{ccode}/{pcode}/{uid}', function (Request $request, Response $r
     $ccode = $args['ccode'];
     $pcode = $args['pcode'];
     $userid = $args['uid'];
+
+    $auth_code = $request->getHeader('authcode')[0];
+    $access_token = check_session($auth_code);
+
+    if($access_token == 0)
+    {
+        $msg["result"]["status"] = "Error";
+        $msg["result"]["body"] = "Unauthorized";
+        $response->getBody()->write(json_encode($msg));
+        return $response->withStatus(401);
+    }
 
     $sql = "SELECT code_content FROM code WHERE problem_code = :pcode AND contest_code = :ccode AND user_id = :userid";
 

@@ -37,6 +37,46 @@ function generate_access_token_from_refresh_token($config, $oauth_details){
 
 }
 
+function store_session($config, $oauth_details)
+{
+    $path = $config['api_endpoint']."users/me";
+    $response = make_api_request($oauth_details, $path);
+    $data = json_decode($response);
+    $username = $data->result->data->content->username;
+    $auth_code = bin2hex(random_bytes(20));
+    $access_token = $oauth_details['access_token'];
+    $refresh_token = $oauth_details['refresh_token'];
+
+    $sql = "INSERT INTO login_credentials (username, auth_code, access_token, refresh_token) VALUES (:username, :auth_code, :access_token, :refresh_token) ON DUPLICATE KEY UPDATE auth_code = VALUES(auth_code), access_token = VALUES(access_token), refresh_token = VALUES(refresh_token)";
+
+    try{
+        // Get DB Object
+        $db = new db();
+        // Connect
+        $db = $db->connect();
+
+        $stmt = $db->prepare($sql);
+
+        $stmt->execute([
+            ':username' => $username,
+            ':auth_code' => $auth_code,
+            ':access_token' => $access_token,
+            ':refresh_token' => $refresh_token
+        ]);
+
+    } catch(PDOException $e){
+        $msg['result'] = ['status'=>"Error", 'body'=>$e->getMessage()];
+        var_dump($msg);
+    }
+
+    return $auth_code;
+}
+
+function make_api_request($oauth_config, $path){
+    $headers[] = 'Authorization: Bearer ' . $oauth_config['access_token'];
+    return make_curl_request($path, false, $headers);
+}
+
 function make_curl_request($url, $post = FALSE, $headers = array())
 {
     $ch = curl_init($url);
@@ -60,8 +100,8 @@ $app->get('/login', function (Request $request, Response $response, $args) {
         'api_endpoint'=> 'https://api.codechef.com/',
         'authorization_code_endpoint'=> 'https://api.codechef.com/oauth/authorize',
         'access_token_endpoint'=> 'https://api.codechef.com/oauth/token',
-        'redirect_uri'=> 'https://www.wannacode.tech',
-        'website_base_url' => 'http://localhost:8000/');
+        'redirect_uri'=> 'https://www.wannacode.tech/login',
+        'website_base_url' => 'https://safe-wildwood-95576.herokuapp.com/');
 
     $oauth_details = array('authorization_code' => '',
         'access_token' => '',
@@ -70,7 +110,12 @@ $app->get('/login', function (Request $request, Response $response, $args) {
     if(isset($_GET['code'])){
         $oauth_details['authorization_code'] = $_GET['code'];
         $oauth_details = generate_access_token_first_time($config, $oauth_details);
-        $params = array('access_token'=>$oauth_details['access_token'], 'refresh_token'=>$oauth_details['refresh_token']);
+        
+        //maintain a session between the intermediate server and client
+        $auth_code = store_session($config, $oauth_details);
+
+        $params = array('access_token'=>$oauth_details['access_token'], 'refresh_token'=>$oauth_details['refresh_token'], 'auth_code'=>$auth_code);
+        setcookie('auth_code', $auth_code, time() + 60*60*24*30, '/');
         header('Location: '.'https://safe-wildwood-95576.herokuapp.com/?'. http_build_query($params));
         die();
     } else{

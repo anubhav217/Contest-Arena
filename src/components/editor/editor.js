@@ -15,7 +15,7 @@ import "./editor.css";
  * The component responsible for rendering the code editor, and it's configurable options. It's a stateless component.
  */
 
-export default withRouter(function(props) {
+export default withRouter(function (props) {
 	//Hooks for editor configuration.
 	const [theme, setTheme] = useState("dark");
 	const [language, setLanguage] = useState("cpp");
@@ -39,6 +39,9 @@ export default withRouter(function(props) {
 
 	//Stores an instance of the Editor, for utility reasons like, getting the code written etc.
 	const valueGetter = useRef();
+
+	let user_session_data = Cookie.load("user_session");
+	const auth_code = user_session_data.auth_code;
 
 	/**
 	 * React hook; invoked when the component gets mounted, and unmonted. Equivalent to ComponentDidMount and componentWillUnmount for stateful components.
@@ -126,7 +129,7 @@ export default withRouter(function(props) {
 		java: "JAVA",
 		javascript: "JS",
 		python: "PYTH 3.6",
-		c: "C"
+		c: "C",
 	};
 	/********************************************************************/
 
@@ -141,20 +144,21 @@ export default withRouter(function(props) {
 			fetch(`${process.env.REACT_APP_SECRET_NAME}/code`, {
 				method: "POST",
 				headers: {
-					"content-Type": "application/json"
+					"content-Type": "application/json",
+					authcode: auth_code,
 				},
 				body: JSON.stringify({
 					pcode: props.problem_code,
 					ccode: props.contest_code,
 					uid: username,
-					code: cur_code
-				})
+					code: cur_code,
+				}),
 			})
-				.then(response => response.text())
+				.then((response) => response.text())
 				.then(() => {
 					saveCode();
 				})
-				.catch(error => console.log("error", error));
+				.catch((error) => console.log("error", error));
 		}
 	};
 
@@ -170,7 +174,7 @@ export default withRouter(function(props) {
 				{
 					path: "/",
 					maxAge: 6048000,
-					expires: 0
+					expires: 0,
 				}
 			);
 		}
@@ -197,18 +201,19 @@ export default withRouter(function(props) {
 					{
 						method: "GET",
 						headers: {
-							Accept: "application/json"
-						}
+							Accept: "application/json",
+							authcode: auth_code,
+						},
 					}
 				)
-					.then(res => {
+					.then((res) => {
 						if (res.ok) {
 							return res.json();
 						} else {
 							throw new Error(res.status);
 						}
 					})
-					.then(result => {
+					.then((result) => {
 						if (result.result.body) {
 							Cookie.save(
 								username + " " + props.problem_code,
@@ -216,13 +221,13 @@ export default withRouter(function(props) {
 								{
 									path: "/",
 									maxAge: 6048000,
-									expires: 0
+									expires: 0,
 								}
 							);
 							setCurCode(result.result.body);
 						}
 					})
-					.catch(error => console.log("error", error));
+					.catch((error) => console.log("error", error));
 			}
 		}
 	};
@@ -281,15 +286,15 @@ export default withRouter(function(props) {
 			headers: {
 				Accept: "application/json",
 				Authorization: "Bearer " + props.user_session.access_token,
-				"Content-Type": "application/json"
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
 				sourceCode: valueGetter.current(),
 				language: codechef_language_mapper[language],
-				input: testInput
-			})
+				input: testInput,
+			}),
 		})
-			.then(res => {
+			.then((res) => {
 				if (res.ok) {
 					return res.json();
 				} else {
@@ -297,13 +302,13 @@ export default withRouter(function(props) {
 				}
 			})
 			.then(
-				result => {
+				(result) => {
 					//A timeout is added to make sure that the submitted has finished running on the online judge and the output is generated.
 					setTimeout(() => {
 						getOutputFromLink(result.result.data.link);
 					}, 20000);
 				},
-				error => {
+				(error) => {
 					console.log(error.message);
 					if (error.message == 401) {
 						props.refresh_token();
@@ -317,15 +322,15 @@ export default withRouter(function(props) {
 	 *
 	 * @param {string} link The link returned by codechef API which is used to fetch the output result.
 	 */
-	const getOutputFromLink = link => {
+	const getOutputFromLink = (link) => {
 		fetch(`https://api.codechef.com/ide/status?link=${link}`, {
 			method: "GET",
 			headers: {
 				Accept: "application/json",
-				Authorization: "Bearer " + props.user_session.access_token
-			}
+				Authorization: "Bearer " + props.user_session.access_token,
+			},
 		})
-			.then(res => {
+			.then((res) => {
 				if (res.ok) {
 					return res.json();
 				} else {
@@ -333,7 +338,7 @@ export default withRouter(function(props) {
 				}
 			})
 			.then(
-				result => {
+				(result) => {
 					//Extract the test result data
 					let compile_info = result.result.data.cmpinfo;
 					let stderr_info = result.result.data.stderr;
@@ -354,7 +359,7 @@ export default withRouter(function(props) {
 					setIsWaiting(false);
 					setSubmitted(true);
 				},
-				error2 => {
+				(error2) => {
 					console.log(error2.message);
 					if (error2.message == 401) {
 						props.refresh_token();
@@ -399,7 +404,7 @@ export default withRouter(function(props) {
 												id="run-input"
 												rows="3"
 												value={testInput}
-												onChange={event =>
+												onChange={(event) =>
 													setTestInput(
 														event.target.value
 													)
@@ -448,7 +453,7 @@ export default withRouter(function(props) {
 
 							<select
 								className="select-css"
-								onChange={event => changeLanguage(event)}
+								onChange={(event) => changeLanguage(event)}
 								disabled={!isEditorReady}
 							>
 								<option value="cpp">C++ 17</option>

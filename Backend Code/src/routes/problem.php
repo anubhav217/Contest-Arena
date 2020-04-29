@@ -134,22 +134,33 @@ function storeProblemDataToDB($res, $pcode, $ccode)
 $app->get('/problem/{ccode}/{pcode}', function (Request $request, Response $response, $args){
     $ccode = $args['ccode'];
     $pcode = $args['pcode'];
+    
+    $auth_code = $request->getHeader('authcode')[0];
+    $access_token = check_session($auth_code);
 
-    $access_token = $request->getHeader('Authorization')[0];
-
-    $msg = getProblemDataFromDB($pcode, $ccode);
-
-    if($msg["result"]["status"] == "Ok")
+    if($access_token == 0)
     {
-        if(count($msg["result"]["body"]) == 0)
+        $msg["result"]["status"] = "Error";
+        $msg["result"]["body"] = "Unauthorized";
+        $response->getBody()->write(json_encode($msg));
+        return $response->withStatus(401);
+    }
+    else
+    {
+        $msg = getProblemDataFromDB($pcode, $ccode);
+
+        if($msg["result"]["status"] == "Ok")
         {
-            $res = fetchProblemDataFromAPI($pcode, $ccode, $access_token);
-            if($res["result"]["status"] == "Ok")
-                $msg = storeProblemDataToDB($res["result"]["body"],$pcode,$ccode);
-            else
+            if(count($msg["result"]["body"]) == 0)
             {
-                $msg["result"]["status"] = "Error";
-                $msg["result"]["body"] = $res["result"]["body"];
+                $res = fetchProblemDataFromAPI($pcode, $ccode, $access_token);
+                if($res["result"]["status"] == "Ok")
+                    $msg = storeProblemDataToDB($res["result"]["body"],$pcode,$ccode);
+                else
+                {
+                    $msg["result"]["status"] = "Error";
+                    $msg["result"]["body"] = $res["result"]["body"];
+                }
             }
         }
     }

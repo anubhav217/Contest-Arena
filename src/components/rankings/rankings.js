@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import ReactCountryFlag from "react-country-flag";
 import Pagination from "react-js-pagination";
+import Cookie from "react-cookies";
 
 import "./ranklist.css";
 
@@ -21,6 +22,8 @@ export default class Rankings extends Component {
 	 */
 	constructor(props) {
 		super(props);
+		let user_session_data = Cookie.load("user_session");
+		this.auth_code = user_session_data.auth_code;
 
 		this.rankings = []; //Stores the whole ranklist
 
@@ -31,7 +34,7 @@ export default class Rankings extends Component {
 			is_waiting: false,
 			activePage: 1,
 			search_param: "",
-			search_query: ""
+			search_query: "",
 		};
 	}
 
@@ -40,9 +43,9 @@ export default class Rankings extends Component {
 	 *
 	 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
 	 */
-	fetchRanklistData = firstTime => {
+	fetchRanklistData = (firstTime) => {
 		this.setState({
-			is_waiting: true
+			is_waiting: true,
 		});
 
 		let too_many = false;
@@ -53,11 +56,11 @@ export default class Rankings extends Component {
 				method: "GET",
 				headers: {
 					Accept: "application/json",
-					Authorization: this.props.user_session.access_token
-				}
+					authcode: this.auth_code,
+				},
 			}
 		)
-			.then(res => {
+			.then((res) => {
 				if (res.ok) {
 					return res.json();
 				} else {
@@ -65,7 +68,7 @@ export default class Rankings extends Component {
 				}
 			})
 			.then(
-				result => {
+				(result) => {
 					if (result.result.status == "Ok") {
 						this.rankings = result.result.body;
 						this.rankings_to_be_shown = result.result.body;
@@ -75,18 +78,18 @@ export default class Rankings extends Component {
 									0,
 									10
 								),
-								is_waiting: false
+								is_waiting: false,
 							});
 						}
 					} else {
 						alert("Opps! Error " + result.result.body);
 						this.setState({
 							rankings: [],
-							isWaiting: false
+							isWaiting: false,
 						});
 					}
 				},
-				error => {
+				(error) => {
 					if (error.message == 401 && firstTime) {
 						this.props.refresh_token();
 						this.fetchRanklistData(!firstTime);
@@ -96,14 +99,14 @@ export default class Rankings extends Component {
 						too_many = !too_many;
 						this.setState({
 							rankings: [],
-							isWaiting: false
+							isWaiting: false,
 						});
 					}
 					if (error.message == 404) {
 						alert("Page not found! 404 :(");
 						this.setState({
 							rankings: [],
-							isWaiting: false
+							isWaiting: false,
 						});
 					}
 				}
@@ -115,13 +118,13 @@ export default class Rankings extends Component {
 	 *
 	 * @param {Integer} pageNumber The current page number
 	 */
-	handlePageChange = pageNumber => {
+	handlePageChange = (pageNumber) => {
 		this.setState({
 			activePage: pageNumber,
 			rankings: this.rankings_to_be_shown.slice(
 				(pageNumber - 1) * 10,
 				(pageNumber - 1) * 10 + 10
-			)
+			),
 		});
 	};
 
@@ -130,9 +133,9 @@ export default class Rankings extends Component {
 	 *
 	 * @param {String} param The selected parameter
 	 */
-	handleSearchParamChange = param => {
+	handleSearchParamChange = (param) => {
 		this.setState({
-			search_param: param
+			search_param: param,
 		});
 	};
 
@@ -141,7 +144,7 @@ export default class Rankings extends Component {
 	 *
 	 * @param {Object} event The event object corresponding to the ranklist search bar
 	 */
-	handleSearch = event => {
+	handleSearch = (event) => {
 		//Check if a search parameter is selected. If not prompt an alert
 		if (this.state.search_param != "") {
 			const q = event.target.value;
@@ -149,7 +152,7 @@ export default class Rankings extends Component {
 
 			let suggestions = this.rankings;
 			if (trimmed_query.length > 0) {
-				suggestions = this.rankings.filter(item => {
+				suggestions = this.rankings.filter((item) => {
 					let c =
 						this.state.search_param == "Institution"
 							? item.institution.toLowerCase()
@@ -164,7 +167,7 @@ export default class Rankings extends Component {
 			this.rankings_to_be_shown = suggestions;
 			this.setState({
 				search_query: q,
-				rankings: this.rankings_to_be_shown.slice(0, 10)
+				rankings: this.rankings_to_be_shown.slice(0, 10),
 			});
 		} else {
 			alert("Please select a search parameter!");
@@ -251,7 +254,7 @@ export default class Rankings extends Component {
 							<div className="col-md-8">
 								<input
 									value={this.state.search_query}
-									onChange={event => {
+									onChange={(event) => {
 										this.handleSearch(event);
 									}}
 									className="form-control mx-auto ranklist-search"

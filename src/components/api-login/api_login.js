@@ -28,7 +28,8 @@ export default class APILogin extends Component {
 			// alert(this.getParameter("access_token"));
 			this.props.onSuccess({
 				access_token: this.getParameter("access_token"),
-				refresh_token: this.getParameter("refresh_token")
+				refresh_token: this.getParameter("refresh_token"),
+				auth_code: this.getParameter("auth_code"),
 			});
 		} else if (window.location.search.includes("error")) {
 			this.props.onFailure(new Error(this.getParameter("error")));

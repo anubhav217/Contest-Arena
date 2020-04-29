@@ -8,8 +8,44 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 
 $app->add(function ($req, $res, $next) {
     $response = $next($req, $res);
-    return $response->withHeader('Access-Control-Allow-Origin', '*')->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    return $response->withHeader('Access-Control-Allow-Origin', '*')->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization, username, authcode')->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
+
+function check_session($auth_code)
+{
+    $sql = "SELECT * FROM login_credentials WHERE auth_code = :auth_code";
+
+    try{
+        // Get DB Object
+        $db = new db();
+        // Connect
+        $db = $db->connect();
+
+        $stmt = $db->prepare($sql);
+
+        $stmt->execute([
+            ':auth_code' => $auth_code
+        ]);
+
+        if($stmt->rowCount() > 0)
+        {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            foreach ($row as $column => $value) {
+                if ($column == 'access_token') {
+                    return $value;
+                }
+            }
+        }
+        else
+        {
+            return 0;
+        }
+
+    } catch(PDOException $e){
+        $msg['result'] = ['status'=>"Error", 'body'=>$e->getMessage()];
+        var_dump($msg);
+    }
+}
 
 require "routes/code.php";
 require "routes/problem.php";

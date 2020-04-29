@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 
 import MarkdownRenderer from "./markdown";
+import Cookie from "react-cookies";
 
 import "./problem_statement.css";
 
@@ -21,11 +22,13 @@ export default withRouter(
 		 */
 		constructor(props) {
 			super(props);
+			let user_session_data = Cookie.load("user_session");
+			this.auth_code = user_session_data.auth_code;
 			this.problem_info = {};
 			this.state = {
 				contest_code: this.props.contest_code,
 				problem_code: this.props.problem_code,
-				fullscreen: this.props.fullscreen
+				fullscreen: this.props.fullscreen,
 			};
 		}
 
@@ -34,7 +37,7 @@ export default withRouter(
 		 *
 		 * @param {boolean} firstTime Used to check whether the request is made for the first time. If at fitst a 401 is thrown due to access token expiry, the token is refreshed and a second request is made.
 		 */
-		fetchProblemData = firstTime => {
+		fetchProblemData = (firstTime) => {
 			if (
 				this.state.contest_code != "" &&
 				this.state.problem_code != ""
@@ -45,11 +48,11 @@ export default withRouter(
 						method: "GET",
 						headers: {
 							Accept: "application/json",
-							Authorization: this.props.user_session.access_token
-						}
+							authcode: this.auth_code,
+						},
 					}
 				)
-					.then(res => {
+					.then((res) => {
 						if (res.ok) {
 							return res.json();
 						} else {
@@ -57,7 +60,7 @@ export default withRouter(
 						}
 					})
 					.then(
-						result => {
+						(result) => {
 							if (
 								result.result.status == "Ok" &&
 								result.result.body
@@ -74,19 +77,19 @@ export default withRouter(
 								}
 								this.setState({
 									contest_code: "",
-									problem_code: ""
+									problem_code: "",
 								});
 								this.props.setStatus("404");
 							}
 						},
-						error => {
+						(error) => {
 							if (error.message == 401 && firstTime) {
 								this.props.refresh_token();
 								this.fetchProblemData(!firstTime);
 							} else if (error.message == 404) {
 								this.setState({
 									contest_code: "",
-									problem_code: ""
+									problem_code: "",
 								});
 
 								this.props.setStatus("404");
@@ -118,7 +121,7 @@ export default withRouter(
 			}
 			if (this.props.fullscreen != prevProps.fullscreen) {
 				this.setState({
-					fullscreen: this.props.fullscreen
+					fullscreen: this.props.fullscreen,
 				});
 			}
 		}
